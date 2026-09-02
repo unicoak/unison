@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  GOD
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  avatarUrl    String?
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now())
+
+  studentProfile      StudentProfile?
+  createdQuests       Quest[]           @relation("QuestCreator")
+  questAssignments    QuestAssignment[]
+  submissions         QuestSubmission[] @relation("SubmissionStudent")
+  reviewedSubmissions QuestSubmission[] @relation("SubmissionReviewer")
+  achievementsGiven   UserAchievement[] @relation("AchievementAwarder")
+  achievements        UserAchievement[] @relation("AchievementOwner")
+}
+
+model StudentProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xp              Int      @default(0)
+  level           Int      @default(1)
+  title           String   @default("Новичок")
+  celebrateLevel  Int?
+  updatedAt       DateTime @updatedAt
+}
+
+model LevelDefinition {
+  level      Int    @id
+  requiredXp Int
+  title      String
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String
+  icon        String
+  createdAt   DateTime @default(now())
+
+  awardedTo UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation("AchievementOwner", fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  awardedAt     DateTime    @default(now())
+  awardedById   String?
+  awardedBy     User?       @relation("AchievementAwarder", fields: [awardedById], references: [id])
+
+  @@unique([userId, achievementId])
+}
+
+enum QuestStatus {
+  OPEN
+  CLOSED
+}
+
+model Quest {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  xpReward    Int
+  dueAt       DateTime?
+  status      QuestStatus @default(OPEN)
+  createdById String
+  createdBy   User        @relation("QuestCreator", fields: [createdById], references: [id])
+  createdAt   DateTime    @default(now())
+
+  assignments QuestAssignment[]
+  submissions QuestSubmission[]
+}
+
+model QuestAssignment {
+  id         String   @id @default(cuid())
+  questId    String
+  quest      Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assignedAt DateTime @default(now())
+
+  @@unique([questId, studentId])
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  APPROVED
+  NEEDS_REVISION
+  REJECTED
+}
+
+model QuestSubmission {
+  id             String           @id @default(cuid())
+  questId        String
+  quest          Quest            @relation(fields: [questId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        User             @relation("SubmissionStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  textContent    String?
+  links          String[]         @default([])
+  status         SubmissionStatus @default(SUBMITTED)
+  teacherComment String?
+  xpAwarded      Int?
+  submittedAt    DateTime         @default(now())
+  reviewedAt     DateTime?
+  reviewedById   String?
+  reviewedBy     User?            @relation("SubmissionReviewer", fields: [reviewedById], references: [id])
+
+  files SubmissionFile[]
+
+  @@unique([questId, studentId])
+}
+
+enum AttachmentType {
+  IMAGE
+  VIDEO
+  OTHER
+}
+
+model SubmissionFile {
+  id           String          @id @default(cuid())
+  submissionId String
+  submission   QuestSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  url          String
+  type         AttachmentType
+  filename     String
+  size         Int
+  createdAt    DateTime        @default(now())
+}
+
+// dayOfWeek: 1=Пн ... 7=Вс
+model ScheduleSlot {
+  id        String   @id @default(cuid())
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  subject   String
+  location  String?
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CurriculumSection {
+  id          String   @id @default(cuid())
+  title       String
+  order       Int
+  period      String
+  description String
+  resources   Json     @default("[]")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
