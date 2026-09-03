@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import os from "os";
 import { randomUUID } from "crypto";
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -28,10 +29,19 @@ export function validateFile(file: { type: string; size: number }) {
   return { ok: true as const, kind };
 }
 
+/** Directory used by the local-disk fallback — the app's own deployed
+ * files (e.g. /app/public) are often read-only in containerized hosting,
+ * but the OS temp directory is always writable. */
+export function localUploadsDir() {
+  return path.join(os.tmpdir(), "unison-uploads");
+}
+
 /**
  * Storage abstraction: uses Vercel Blob in production (when a token is
- * configured) and falls back to writing into /public/uploads for local
- * development, so the app works fully offline without a cloud account.
+ * configured) and otherwise writes into the OS temp directory, served back
+ * through /api/uploads/[filename]. This works without any cloud storage
+ * account, but files do not survive a container restart/redeploy — for
+ * production durability, configure Vercel Blob or an S3-compatible bucket.
  */
 export async function storeFile(file: File): Promise<{ url: string; kind: AttachmentKind }> {
   const validation = validateFile(file);
@@ -46,11 +56,11 @@ export async function storeFile(file: File): Promise<{ url: string; kind: Attach
     return { url: blob.url, kind: validation.kind };
   }
 
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
+  const uploadsDir = localUploadsDir();
   await mkdir(uploadsDir, { recursive: true });
   const filename = `${randomUUID()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
   await writeFile(path.join(uploadsDir, filename), buffer);
 
-  return { url: `/uploads/${filename}`, kind: validation.kind };
+  return { url: `/api/uploads/${filename}`, kind: validation.kind };
 }
