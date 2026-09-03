@@ -29,19 +29,70 @@ export function validateFile(file: { type: string; size: number }) {
   return { ok: true as const, kind };
 }
 
-/** Directory used by the local-disk fallback — the app's own deployed
- * files (e.g. /app/public) are often read-only in containerized hosting,
+function s3Config() {
+  const { S3_ENDPOINT, S3_ACCESS_KEY, S3_SECRET_KEY, S3_BUCKET } = process.env;
+  if (!S3_ENDPOINT || !S3_ACCESS_KEY || !S3_SECRET_KEY || !S3_BUCKET) return null;
+  return {
+    endpoint: S3_ENDPOINT,
+    region: process.env.S3_REGION || "ru-1",
+    accessKey: S3_ACCESS_KEY,
+    secretKey: S3_SECRET_KEY,
+    bucket: S3_BUCKET,
+    publicUrl: (process.env.S3_PUBLIC_URL || `${S3_ENDPOINT}/${S3_BUCKET}`).replace(/\/$/, ""),
+  };
+}
+
+async function uploadToS3(file: File, key: string): Promise<string> {
+  const config = s3Config();
+  if (!config) throw new Error("S3 не настроен");
+
+  const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");
+  const client = new S3Client({
+    endpoint: config.endpoint,
+    region: config.region,
+    forcePathStyle: true,
+    credentials: { accessKeyId: config.accessKey, secretAccessKey: config.secretKey },
+  });
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await client.send(
+    new PutObjectCommand({
+      Bucket: config.bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: file.type,
+      ACL: "public-read",
+    }),
+  );
+
+  return `${config.publicUrl}/${key}`;
+}
+
+/** Directory used by the local-disk fallback (dev only) — the app's own
+ * deployed files (e.g. /app/public) are read-only in containerized hosting,
  * but the OS temp directory is always writable. */
-export function localUploadsDir() {
+function localUploadsDir() {
   return path.join(os.tmpdir(), "unison-uploads");
 }
 
+async function uploadToLocalDisk(file: File): Promise<string> {
+  const uploadsDir = localUploadsDir();
+  await mkdir(uploadsDir, { recursive: true });
+  const ext = file.name.split(".").pop() || "bin";
+  const filename = `${randomUUID()}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await writeFile(path.join(uploadsDir, filename), buffer);
+  return `/api/uploads/${filename}`;
+}
+
+export { localUploadsDir };
+
 /**
- * Storage abstraction: uses Vercel Blob in production (when a token is
- * configured) and otherwise writes into the OS temp directory, served back
- * through /api/uploads/[filename]. This works without any cloud storage
- * account, but files do not survive a container restart/redeploy — for
- * production durability, configure Vercel Blob or an S3-compatible bucket.
+ * Storage abstraction: uploads to an S3-compatible bucket (Timeweb S3,
+ * or any other S3-compatible provider) when configured. Falls back to
+ * writing into the OS temp dir for local development without any cloud
+ * account — that fallback does not survive a restart/redeploy and should
+ * never be relied on in production.
  */
 export async function storeFile(file: File): Promise<{ url: string; kind: AttachmentKind }> {
   const validation = validateFile(file);
@@ -50,17 +101,7 @@ export async function storeFile(file: File): Promise<{ url: string; kind: Attach
   const ext = file.name.split(".").pop() || "bin";
   const key = `uploads/${randomUUID()}.${ext}`;
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const { put } = await import("@vercel/blob");
-    const blob = await put(key, file, { access: "public" });
-    return { url: blob.url, kind: validation.kind };
-  }
+  const url = s3Config() ? await uploadToS3(file, key) : await uploadToLocalDisk(file);
 
-  const uploadsDir = localUploadsDir();
-  await mkdir(uploadsDir, { recursive: true });
-  const filename = `${randomUUID()}.${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(uploadsDir, filename), buffer);
-
-  return { url: `/api/uploads/${filename}`, kind: validation.kind };
+  return { url, kind: validation.kind };
 }

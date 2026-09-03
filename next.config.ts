@@ -1,18 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
-    ],
-  },
   experimental: {
     serverActions: {
-      // Homework attachments (video in particular) are uploaded through a
-      // server action today. On Vercel this still rides the platform's own
-      // function payload cap regardless of this setting — see README for
-      // the direct-to-Blob client upload upgrade needed before relying on
-      // large video submissions in production.
+      // Homework attachments (photos/video) are uploaded through a server
+      // action; on some hosts the platform's own proxy still caps request
+      // bodies regardless of this setting.
       bodySizeLimit: "210mb",
     },
   },
