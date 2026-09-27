@@ -11,6 +11,11 @@ export const registerSchema = z.object({
   password: z.string().min(6, "Минимум 6 символов").max(100),
 });
 
+export const resetPasswordSchema = z.object({
+  userId: z.string().min(1),
+  password: z.string().min(6, "Минимум 6 символов").max(100),
+});
+
 export const questSchema = z.object({
   title: z.string().trim().min(3, "Минимум 3 символа").max(120),
   description: z.string().trim().min(3, "Добавьте описание").max(4000),

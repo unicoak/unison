@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/Badge";
 import { ROLE_LABELS } from "@/lib/labels";
 import { RoleToggle } from "./RoleToggle";
+import { ResetPasswordForm } from "./ResetPasswordForm";
 
 export default async function ManageUsersPage() {
   await requireGod();
@@ -23,11 +24,12 @@ export default async function ManageUsersPage() {
               <p className="font-display text-base font-bold">{u.displayName}</p>
               <p className="text-xs text-ink-soft">{u.email}</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge tone={u.role === "GOD" ? "coral" : u.role === "TEACHER" ? "violet" : "lime"}>
                 {ROLE_LABELS[u.role]}
               </Badge>
               <RoleToggle userId={u.id} role={u.role} />
+              <ResetPasswordForm userId={u.id} />
             </div>
           </div>
         ))}
