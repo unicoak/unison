@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/brand";
 import { LinkButton } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -128,9 +128,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t-2 border-ink px-4 py-6 text-center text-sm text-ink-soft">
-        <Link href="/">{SITE_NAME}</Link> · © {new Date().getFullYear()}
-      </footer>
+      <SiteFooter className="border-t-2 border-ink py-6" />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/brand";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -37,8 +38,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </p>
       </div>
 
-      <div className="flex items-center justify-center p-6 sm:p-10">
-        <div className="w-full max-w-sm">{children}</div>
+      <div className="flex flex-col">
+        <div className="flex flex-1 items-center justify-center p-6 sm:p-10">
+          <div className="w-full max-w-sm">{children}</div>
+        </div>
+        <SiteFooter />
       </div>
     </div>
   );
