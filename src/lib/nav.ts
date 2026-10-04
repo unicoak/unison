@@ -14,6 +14,7 @@ const STAFF_NAV: NavItem[] = [
   { href: "/dashboard", label: "Обзор", icon: "🏠" },
   { href: "/dashboard/manage/quests", label: "Квесты", icon: "🗺️" },
   { href: "/dashboard/manage/students", label: "Ученики", icon: "🧑‍🎓" },
+  { href: "/dashboard/manage/achievements", label: "Ачивки", icon: "🏅" },
   { href: "/dashboard/manage/schedule", label: "Расписание", icon: "🗓️" },
   { href: "/dashboard/manage/curriculum", label: "План", icon: "📚" },
 ];
