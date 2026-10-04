@@ -29,6 +29,8 @@ model User {
   reviewedSubmissions QuestSubmission[] @relation("SubmissionReviewer")
   achievementsGiven   UserAchievement[] @relation("AchievementAwarder")
   achievements        UserAchievement[] @relation("AchievementOwner")
+  forumTopics         ForumTopic[]
+  forumPosts          ForumPost[]
 }
 
 model StudentProfile {
@@ -170,4 +172,28 @@ model CurriculumSection {
   resources   Json     @default("[]")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model ForumTopic {
+  id        String   @id @default(cuid())
+  title     String
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  posts ForumPost[]
+
+  @@index([createdAt])
+}
+
+model ForumPost {
+  id        String     @id @default(cuid())
+  topicId   String
+  topic     ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime   @default(now())
+
+  @@index([topicId, createdAt])
 }

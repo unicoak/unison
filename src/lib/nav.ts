@@ -8,6 +8,7 @@ const STUDENT_NAV: NavItem[] = [
   { href: "/dashboard/achievements", label: "Ачивки", icon: "🏅" },
   { href: "/dashboard/schedule", label: "Расписание", icon: "🗓️" },
   { href: "/dashboard/curriculum", label: "План", icon: "📚" },
+  { href: "/dashboard/forum", label: "Форум", icon: "💬" },
 ];
 
 const STAFF_NAV: NavItem[] = [
@@ -17,6 +18,7 @@ const STAFF_NAV: NavItem[] = [
   { href: "/dashboard/manage/achievements", label: "Ачивки", icon: "🏅" },
   { href: "/dashboard/manage/schedule", label: "Расписание", icon: "🗓️" },
   { href: "/dashboard/manage/curriculum", label: "План", icon: "📚" },
+  { href: "/dashboard/forum", label: "Форум", icon: "💬" },
 ];
 
 const GOD_EXTRA_NAV: NavItem[] = [{ href: "/dashboard/manage/users", label: "Пользователи", icon: "🛡️" }];
