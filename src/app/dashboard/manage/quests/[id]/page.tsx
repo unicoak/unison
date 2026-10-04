@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { SUBMISSION_STATUS_LABELS } from "@/lib/labels";
 import { ReviewPanel } from "./ReviewPanel";
 import { CloseQuestButton } from "./CloseQuestButton";
+import { DeleteQuestButton } from "./DeleteQuestButton";
 
 export default async function ManageQuestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -32,6 +33,7 @@ export default async function ManageQuestDetailPage({ params }: { params: Promis
           <div className="flex items-center gap-2">
             <Badge tone="violet">+{quest.xpReward} XP</Badge>
             {quest.status === "CLOSED" ? <Badge tone="ink">Закрыт</Badge> : <CloseQuestButton questId={quest.id} />}
+            <DeleteQuestButton questId={quest.id} />
           </div>
         </div>
         <p className="mt-4 whitespace-pre-wrap text-ink-soft">{quest.description}</p>

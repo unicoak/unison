@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { manualXpSchema, awardAchievementSchema } from "@/lib/validation";
@@ -46,4 +47,14 @@ export async function awardAchievementAction(_prev: ActionState, formData: FormD
 
   revalidatePath(`/dashboard/manage/students/${studentId}`);
   return { success: "Ачивка выдана" };
+}
+
+export async function deleteStudentAction(studentId: string) {
+  await requireStaff();
+  // Only students can be removed here; profile, submissions, assignments and
+  // achievements are removed by cascade.
+  await prisma.user.deleteMany({ where: { id: studentId, role: "STUDENT" } });
+  revalidatePath("/dashboard/manage/students");
+  revalidatePath("/dashboard/manage/quests");
+  redirect("/dashboard/manage/students");
 }

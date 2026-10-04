@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { manualXpAction, awardAchievementAction } from "../actions";
+import { manualXpAction, awardAchievementAction, deleteStudentAction } from "../actions";
 import { Label, Input, FieldError } from "@/components/ui/FormField";
 import { Button } from "@/components/ui/Button";
 
@@ -65,6 +65,27 @@ export function AwardAchievementForm({
 
       <FieldError>{state?.error}</FieldError>
       {state?.success && <p className="text-sm font-semibold text-violet">{state.success}</p>}
+    </form>
+  );
+}
+
+export function DeleteStudentButton({ studentId, name }: { studentId: string; name: string }) {
+  const action = deleteStudentAction.bind(null, studentId);
+  return (
+    <form
+      action={action}
+      onSubmit={(e) => {
+        if (!confirm(`Удалить ученика «${name}»? Все его сдачи, XP и ачивки будут удалены без возможности восстановления.`)) {
+          e.preventDefault();
+        }
+      }}
+    >
+      <button
+        type="submit"
+        className="rounded-full border-2 border-ink bg-white px-3 py-1 font-display text-xs font-semibold text-coral hover:bg-paper-dim"
+      >
+        Удалить ученика
+      </button>
     </form>
   );
 }

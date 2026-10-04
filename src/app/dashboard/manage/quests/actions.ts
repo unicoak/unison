@@ -58,6 +58,17 @@ export async function closeQuestAction(questId: string) {
   revalidatePath(`/dashboard/manage/quests/${questId}`);
 }
 
+export async function deleteQuestAction(questId: string) {
+  await requireStaff();
+  // Assignments, submissions and their files go with the quest (onDelete: Cascade).
+  // XP already awarded for approved submissions is intentionally left as is.
+  await prisma.quest.deleteMany({ where: { id: questId } });
+  revalidatePath("/dashboard/manage/quests");
+  revalidatePath("/dashboard/quests");
+  revalidatePath("/dashboard");
+  redirect("/dashboard/manage/quests");
+}
+
 export async function reviewSubmissionAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireStaff();
 
