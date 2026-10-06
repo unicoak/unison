@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
-import { manualXpSchema, awardAchievementSchema } from "@/lib/validation";
+import bcrypt from "bcryptjs";
+import { manualXpSchema, awardAchievementSchema, createStudentSchema } from "@/lib/validation";
 import { awardXp } from "@/lib/xp";
 import { checkLevelAchievements } from "@/lib/achievements";
 
@@ -60,4 +61,43 @@ export async function deleteStudentAction(studentId: string) {
   revalidatePath("/dashboard/manage/students");
   revalidatePath("/dashboard/manage/quests");
   redirect("/dashboard/manage/students");
+}
+
+export type CreateStudentState = { error?: string; success?: string } | undefined;
+
+export async function createStudentAction(_prev: CreateStudentState, formData: FormData): Promise<CreateStudentState> {
+  await requireStaff();
+
+  const parsed = createStudentSchema.safeParse({
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
+    username: formData.get("username"),
+    password: formData.get("password"),
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Проверьте поля формы" };
+
+  const { firstName, lastName, username, password } = parsed.data;
+
+  const taken = await prisma.user.findUnique({ where: { username } });
+  if (taken) return { error: "Такой никнейм уже занят" };
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  try {
+    await prisma.user.create({
+      data: {
+        username,
+        firstName,
+        lastName,
+        displayName: `${firstName} ${lastName}`,
+        passwordHash,
+        role: "STUDENT",
+        studentProfile: { create: {} },
+      },
+    });
+  } catch {
+    return { error: "Не удалось создать ученика, возможно никнейм уже занят" };
+  }
+
+  revalidatePath("/dashboard/manage/students");
+  return { success: `Ученик «${firstName} ${lastName}» создан. Логин для входа: ${username}` };
 }

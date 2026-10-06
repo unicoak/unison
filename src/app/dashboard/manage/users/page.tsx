@@ -22,7 +22,7 @@ export default async function ManageUsersPage() {
           <div key={u.id} className="brutal-card flex flex-wrap items-center justify-between gap-3 p-4">
             <div>
               <p className="font-display text-base font-bold">{u.displayName}</p>
-              <p className="text-xs text-ink-soft">{u.email}</p>
+              <p className="text-xs text-ink-soft">{u.username ? `@${u.username}` : u.email}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone={u.role === "GOD" ? "coral" : u.role === "TEACHER" ? "violet" : "lime"}>

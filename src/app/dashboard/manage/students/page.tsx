@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { LinkButton } from "@/components/ui/Button";
 
 export default async function ManageStudentsPage() {
   await requireStaff();
@@ -13,7 +14,10 @@ export default async function ManageStudentsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-3xl font-extrabold">Ученики</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-display text-3xl font-extrabold">Ученики</h1>
+        <LinkButton href="/dashboard/manage/students/new">+ Новый ученик</LinkButton>
+      </div>
 
       {students.length === 0 ? (
         <p className="brutal-card p-6 text-sm text-ink-soft">Пока никто не зарегистрировался.</p>
@@ -27,7 +31,7 @@ export default async function ManageStudentsPage() {
             >
               <div>
                 <p className="font-display text-base font-bold">{s.displayName}</p>
-                <p className="text-xs text-ink-soft">{s.email}</p>
+                <p className="text-xs text-ink-soft">{s.username ? `@${s.username}` : s.email}</p>
               </div>
               <div className="text-right">
                 <p className="font-display text-sm font-extrabold text-violet">

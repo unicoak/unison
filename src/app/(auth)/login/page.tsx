@@ -16,8 +16,8 @@ export default function LoginPage() {
 
       <form action={formAction} className="mt-6 flex flex-col gap-4">
         <div>
-          <Label htmlFor="email">E-mail</Label>
-          <Input id="email" name="email" type="email" placeholder="you@school.ru" required autoFocus />
+          <Label htmlFor="login">E-mail или никнейм</Label>
+          <Input id="login" name="login" type="text" placeholder="you@school.ru или nickname" autoCapitalize="none" autoComplete="username" required autoFocus />
         </div>
         <div>
           <Label htmlFor="password">Пароль</Label>

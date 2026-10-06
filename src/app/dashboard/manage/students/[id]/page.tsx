@@ -36,7 +36,7 @@ export default async function ManageStudentDetailPage({ params }: { params: Prom
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl font-extrabold">{student.displayName}</h1>
-          <p className="text-ink-soft">{student.email}</p>
+          <p className="text-ink-soft">{[student.username && `@${student.username}`, student.email].filter(Boolean).join(" · ")}</p>
         </div>
         <DeleteStudentButton studentId={id} name={student.displayName} />
       </div>

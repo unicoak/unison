@@ -11,13 +11,13 @@ export type AuthActionState = { error?: string } | undefined;
 export async function loginAction(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   try {
     await signIn("credentials", {
-      email: formData.get("email"),
+      login: formData.get("login"),
       password: formData.get("password"),
       redirectTo: "/dashboard",
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: "Неверный e-mail или пароль" };
+      return { error: "Неверный логин или пароль" };
     }
     throw error;
   }
@@ -54,7 +54,7 @@ export async function registerAction(_prevState: AuthActionState, formData: Form
   });
 
   try {
-    await signIn("credentials", { email, password, redirectTo: "/dashboard" });
+    await signIn("credentials", { login: email, password, redirectTo: "/dashboard" });
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: "Аккаунт создан, но вход не удался — попробуйте войти вручную" };

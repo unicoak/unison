@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Введите корректный e-mail"),
+  login: z.string().trim().toLowerCase().min(1, "Введите e-mail или никнейм"),
   password: z.string().min(1, "Введите пароль"),
 });
 
@@ -110,3 +110,16 @@ export const levelLadderSchema = z
       }
     }
   });
+
+export const usernameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9_.-]{3,30}$/, "Никнейм: 3–30 символов, латиница, цифры и . _ -");
+
+export const createStudentSchema = z.object({
+  firstName: z.string().trim().min(1, "Введите имя").max(40),
+  lastName: z.string().trim().min(1, "Введите фамилию").max(40),
+  username: usernameSchema,
+  password: z.string().min(6, "Пароль: минимум 6 символов").max(100),
+});
