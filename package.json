@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "migrate:prod": "node --env-file=.env.migrate node_modules/prisma/build/index.js migrate deploy",
+    "migrate:status": "node --env-file=.env.migrate node_modules/prisma/build/index.js migrate status"
   },
   "dependencies": {
     "next": "15.5.9",

@@ -56,6 +56,11 @@ Next.js 15 (App Router) · TypeScript · Tailwind CSS v4 · Prisma + PostgreSQL 
    база недоступна (`P1001: Can't reach database server at 192.168.0.4:5432`). В Start command
    (`npx prisma migrate deploy && npm start`) миграции применяются, но сайт уходит в цикл
    перезапусков (SIGTERM от health-check), пока команду не вернут на `npm start`.
+   **Принятая схема (с 2026-10-06):** миграции накатываются с локальной машины:
+   `npm run migrate:prod` (статус — `npm run migrate:status`). Они читают `DATABASE_URL`
+   из `.env.migrate` (gitignored, внешний адрес БД `217.149.31.181:5432`; там реальный пароль,
+   в репозиторий не коммитить). Порядок: сначала `migrate:prod`, потом `git push`.
+   Start command в Timeweb всегда `npm start`, Build command — `npm run build`.
    Новая миграция ломает код, который её использует, поэтому порядок такой: сначала миграция,
    потом код. Планируется накатывать миграции с локальной машины через внешний доступ к БД
    (с ограничением по IP), чтобы не менять команды в Timeweb.
