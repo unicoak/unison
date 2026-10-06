@@ -27,6 +27,14 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
     include: { files: true },
   });
 
+  const questAchievement = assignment.quest.achievement;
+  const achievementRevealed =
+    !!questAchievement &&
+    (!questAchievement.secret ||
+      !!(await prisma.userAchievement.findUnique({
+        where: { userId_achievementId: { userId: session.user.id, achievementId: questAchievement.id } },
+      })));
+
   const status = submission ? SUBMISSION_STATUS_LABELS[submission.status] : null;
   const canEdit = !submission || submission.status === "NEEDS_REVISION" || submission.status === "REJECTED";
 
@@ -45,9 +53,9 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
 
         <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
           <span className="rounded-full bg-violet/10 px-3 py-1 text-violet">+{assignment.quest.xpReward} XP</span>
-          {assignment.quest.achievement && (
+          {questAchievement && (
             <span className="rounded-full bg-sun/30 px-3 py-1 text-ink">
-              {assignment.quest.achievement.icon} ачивка: {assignment.quest.achievement.name}
+              {achievementRevealed ? `${questAchievement.icon} ачивка: ${questAchievement.name}` : "🔒 секретная ачивка"}
             </span>
           )}
           {assignment.quest.dueAt && (

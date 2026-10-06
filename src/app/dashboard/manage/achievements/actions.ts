@@ -18,6 +18,7 @@ function parseFields(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description"),
     icon: formData.get("icon"),
+    secret: formData.get("secret") === "on",
   });
 }
 

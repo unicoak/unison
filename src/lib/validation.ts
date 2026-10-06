@@ -73,6 +73,7 @@ export const achievementSchema = z.object({
   name: z.string().trim().min(2, "Название: минимум 2 символа").max(60),
   description: z.string().trim().min(2, "Добавьте описание").max(300),
   icon: z.string().trim().min(1, "Укажите эмодзи").max(8, "Иконка — одно эмодзи"),
+  secret: z.boolean(),
 });
 
 export const forumTopicSchema = z.object({

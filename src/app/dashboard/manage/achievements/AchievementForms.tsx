@@ -5,7 +5,7 @@ import { createAchievementAction, updateAchievementAction } from "./actions";
 import { Label, Input, FieldError } from "@/components/ui/FormField";
 import { Button } from "@/components/ui/Button";
 
-type Achievement = { id: string; name: string; description: string; icon: string };
+type Achievement = { id: string; name: string; description: string; icon: string; secret: boolean };
 
 function Fields({ a }: { a?: Achievement }) {
   const p = a?.id ?? "new";
@@ -23,6 +23,10 @@ function Fields({ a }: { a?: Achievement }) {
         <Label htmlFor={`description-${p}`}>Описание</Label>
         <Input id={`description-${p}`} name="description" defaultValue={a?.description} placeholder="За что выдаётся" required />
       </div>
+      <label className="flex items-center gap-2 font-display text-sm font-semibold sm:col-span-4">
+        <input type="checkbox" name="secret" defaultChecked={a?.secret} className="h-5 w-5 accent-violet" />
+        Секретная (ученики не видят её, пока не получат)
+      </label>
     </>
   );
 }

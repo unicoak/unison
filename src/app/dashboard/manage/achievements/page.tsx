@@ -21,7 +21,10 @@ export default async function ManageAchievementsPage() {
             <summary className="flex cursor-pointer items-center gap-3">
               <span className="text-3xl">{a.icon}</span>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-display text-base font-bold">{a.name}</p>
+                <p className="truncate font-display text-base font-bold">
+                  {a.name}
+                  {a.secret && <span className="ml-2 text-xs font-semibold text-violet">🔒 секретная</span>}
+                </p>
                 <p className="truncate text-xs text-ink-soft">{a.description}</p>
               </div>
               <span className="text-xs font-semibold text-ink-soft">выдана: {a._count.awardedTo}</span>

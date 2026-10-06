@@ -14,18 +14,20 @@ export default async function AchievementsPage() {
   ]);
 
   const earnedMap = new Map(earned.map((e) => [e.achievementId, e.awardedAt]));
+  // Secret achievements stay hidden (and uncounted) until the student earns them.
+  const visible = achievements.filter((a) => !a.secret || earnedMap.has(a.id));
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-display text-3xl font-extrabold">Ачивки</h1>
         <p className="mt-1 text-ink-soft">
-          Получено {earned.length} из {achievements.length}
+          Получено {earned.length} из {visible.length}
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {achievements.map((a) => {
+        {visible.map((a) => {
           const awardedAt = earnedMap.get(a.id);
           const isEarned = !!awardedAt;
           return (
@@ -48,7 +50,7 @@ export default async function AchievementsPage() {
         })}
       </div>
 
-      {achievements.length === 0 && (
+      {visible.length === 0 && (
         <p className="brutal-card p-6 text-sm text-ink-soft">Ачивок пока нет — учитель их скоро добавит.</p>
       )}
     </div>
