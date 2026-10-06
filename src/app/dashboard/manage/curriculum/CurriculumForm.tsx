@@ -13,8 +13,8 @@ export function CurriculumForm() {
       <p className="font-display text-sm font-bold">Добавить раздел плана</p>
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <Label htmlFor="order">№ по порядку</Label>
-          <Input id="order" name="order" type="number" defaultValue={1} required />
+          <Label htmlFor="number">№ по порядку</Label>
+          <Input id="number" name="number" inputMode="decimal" defaultValue="1" placeholder="1 или 1.2" maxLength={30} required />
         </div>
         <div className="sm:col-span-2">
           <Label htmlFor="period">Период</Label>
@@ -43,7 +43,7 @@ export function CurriculumForm() {
 
 export type EditableSection = {
   id: string;
-  order: number;
+  number: string;
   period: string;
   title: string;
   description: string;
@@ -59,8 +59,8 @@ export function EditCurriculumForm({ section }: { section: EditableSection }) {
       <input type="hidden" name="id" value={section.id} />
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <Label htmlFor={`order-${p}`}>№ по порядку</Label>
-          <Input id={`order-${p}`} name="order" type="number" defaultValue={section.order} required />
+          <Label htmlFor={`number-${p}`}>№ по порядку</Label>
+          <Input id={`number-${p}`} name="number" inputMode="decimal" defaultValue={section.number} placeholder="1 или 1.2" maxLength={30} required />
         </div>
         <div className="sm:col-span-2">
           <Label htmlFor={`period-${p}`}>Период</Label>

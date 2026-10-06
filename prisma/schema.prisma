@@ -185,6 +185,8 @@ model CurriculumSection {
   id          String   @id @default(cuid())
   title       String
   order       Int
+  // Display number such as "2" or "1.10"; sorted segment by segment. `order` keeps its integer part.
+  number      String?
   period      String
   description String
   resources   Json     @default("[]")

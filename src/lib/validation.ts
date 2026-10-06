@@ -61,7 +61,10 @@ export const scheduleSlotSchema = z.object({
 
 export const curriculumSectionSchema = z.object({
   title: z.string().trim().min(1).max(150),
-  order: z.coerce.number().int().min(0).max(10000),
+  number: z
+    .string()
+    .trim()
+    .regex(/^\d{1,5}(\.\d{1,5}){0,3}$/, "Номер: цифры, можно через точку — например 3 или 1.2"),
   period: z.string().trim().min(1).max(60),
   description: z.string().trim().max(4000),
   resources: z

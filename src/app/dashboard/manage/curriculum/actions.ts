@@ -20,7 +20,7 @@ function parseSectionForm(formData: FormData) {
 
   return curriculumSectionSchema.safeParse({
     title: formData.get("title"),
-    order: formData.get("order"),
+    number: formData.get("number"),
     period: formData.get("period"),
     description: formData.get("description"),
     resources,
@@ -39,7 +39,7 @@ export async function createCurriculumSectionAction(_prev: ActionState, formData
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Проверьте поля" };
 
   await prisma.curriculumSection.create({
-    data: { ...parsed.data, resources: parsed.data.resources ?? [] },
+    data: { ...parsed.data, order: Number.parseInt(parsed.data.number, 10), resources: parsed.data.resources ?? [] },
   });
   revalidateCurriculum();
   return {};
@@ -54,7 +54,7 @@ export async function updateCurriculumSectionAction(_prev: ActionState, formData
 
   const result = await prisma.curriculumSection.updateMany({
     where: { id },
-    data: { ...parsed.data, resources: parsed.data.resources ?? [] },
+    data: { ...parsed.data, order: Number.parseInt(parsed.data.number, 10), resources: parsed.data.resources ?? [] },
   });
   if (result.count === 0) return { error: "Раздел не найден" };
 

@@ -1,13 +1,12 @@
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { compareSections, sectionNumber } from "@/lib/curriculum";
 import { CurriculumForm, EditCurriculumForm } from "./CurriculumForm";
 import { deleteCurriculumSectionAction } from "./actions";
 
 export default async function ManageCurriculumPage() {
   await requireStaff();
-  const sections = await prisma.curriculumSection.findMany({
-    orderBy: { order: "asc" },
-  });
+  const sections = (await prisma.curriculumSection.findMany()).sort(compareSections);
 
   return (
     <div className="flex flex-col gap-6">
@@ -20,7 +19,7 @@ export default async function ManageCurriculumPage() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="font-display text-xs font-bold uppercase tracking-widest text-violet">
-                  {s.order}. {s.period}
+                  {sectionNumber(s)}. {s.period}
                 </p>
                 <p className="font-display text-base font-bold">{s.title}</p>
                 <p className="text-sm text-ink-soft">{s.description}</p>
@@ -41,7 +40,7 @@ export default async function ManageCurriculumPage() {
               <EditCurriculumForm
                 section={{
                   id: s.id,
-                  order: s.order,
+                  number: sectionNumber(s),
                   period: s.period,
                   title: s.title,
                   description: s.description,

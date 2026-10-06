@@ -1,12 +1,13 @@
 import { requireSession } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { compareSections, sectionNumber } from "@/lib/curriculum";
 
 type Resource = { label: string; url: string };
 
 export default async function CurriculumPage() {
   await requireSession();
 
-  const sections = await prisma.curriculumSection.findMany({ orderBy: { order: "asc" } });
+  const sections = (await prisma.curriculumSection.findMany()).sort(compareSections);
 
   return (
     <div className="flex flex-col gap-6">
@@ -19,12 +20,12 @@ export default async function CurriculumPage() {
         <p className="brutal-card p-6 text-sm text-ink-soft">План пока не опубликован.</p>
       ) : (
         <ol className="flex flex-col gap-4">
-          {sections.map((s, i) => {
+          {sections.map((s) => {
             const resources = (Array.isArray(s.resources) ? s.resources : []) as unknown as Resource[];
             return (
               <li key={s.id} className="brutal-card flex gap-4 p-5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-sun font-display text-sm font-extrabold">
-                  {i + 1}
+                <span className="flex h-10 min-w-10 shrink-0 items-center justify-center rounded-full bg-sun px-2 font-display text-sm font-extrabold">
+                  {sectionNumber(s)}
                 </span>
                 <div className="min-w-0">
                   <p className="font-display text-xs font-bold uppercase tracking-widest text-violet">
