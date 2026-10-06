@@ -10,6 +10,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const session = await requireSession();
   const { role, id, name } = session.user;
   const navItems = getNavForRole(role);
+  const me = await prisma.user.findUnique({ where: { id }, select: { avatarUrl: true } });
 
   let celebration: { level: number; title: string } | null = null;
   if (role === "STUDENT") {
@@ -21,7 +22,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-screen">
-      <TopBar name={name ?? "Без имени"} role={role} />
+      <TopBar name={name ?? "Без имени"} role={role} avatarUrl={me?.avatarUrl ?? null} />
 
       <div className="mx-auto flex max-w-6xl gap-6 px-4 pb-4 pt-6 md:px-8 md:pb-6">
         <aside className="hidden w-56 shrink-0 md:block">

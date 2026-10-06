@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { getStudentXpSummary } from "@/lib/xp";
+import { Avatar } from "@/components/ui/Avatar";
 import { XpBar } from "@/components/ui/XpBar";
 import { Badge } from "@/components/ui/Badge";
 import { SUBMISSION_STATUS_LABELS } from "@/lib/labels";
@@ -34,9 +35,12 @@ export default async function ManageStudentDetailPage({ params }: { params: Prom
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+        <div className="flex items-center gap-4">
+          <Avatar name={student.displayName} url={student.avatarUrl} size="lg" />
+          <div>
           <h1 className="font-display text-3xl font-extrabold">{student.displayName}</h1>
           <p className="text-ink-soft">{[student.username && `@${student.username}`, student.email].filter(Boolean).join(" · ")}</p>
+          </div>
         </div>
         <DeleteStudentButton studentId={id} name={student.displayName} />
       </div>

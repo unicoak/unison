@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { ROLE_LABELS } from "@/lib/labels";
 import { ReplyForm } from "./ReplyForm";
@@ -31,6 +32,7 @@ export default async function ForumTopicPage({ params }: { params: Promise<{ id:
         {topic.posts.map((p) => (
           <div key={p.id} className="brutal-card p-5">
             <div className="flex flex-wrap items-center gap-2">
+              <Avatar name={p.author.displayName} url={p.author.avatarUrl} size="sm" />
               <p className="font-display text-sm font-bold">{p.author.displayName}</p>
               {p.author.role !== "STUDENT" && <Badge tone="violet">{ROLE_LABELS[p.author.role]}</Badge>}
               <p className="text-xs text-ink-soft">{dateFmt.format(p.createdAt)}</p>

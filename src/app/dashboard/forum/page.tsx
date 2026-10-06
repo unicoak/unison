@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireSession } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { Avatar } from "@/components/ui/Avatar";
 import { LinkButton } from "@/components/ui/Button";
 
 const dateFmt = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -10,7 +11,7 @@ export default async function ForumPage() {
 
   const topics = await prisma.forumTopic.findMany({
     include: {
-      author: { select: { displayName: true } },
+      author: { select: { displayName: true, avatarUrl: true } },
       _count: { select: { posts: true } },
       posts: { orderBy: { createdAt: "desc" }, take: 1, select: { createdAt: true } },
     },
@@ -36,9 +37,12 @@ export default async function ForumPage() {
               href={`/dashboard/forum/${t.id}`}
               className="brutal-card flex flex-wrap items-center justify-between gap-3 p-4"
             >
-              <div className="min-w-0">
-                <p className="truncate font-display text-base font-bold">{t.title}</p>
-                <p className="text-xs text-ink-soft">{t.author.displayName}</p>
+              <div className="flex min-w-0 items-center gap-3">
+                <Avatar name={t.author.displayName} url={t.author.avatarUrl} />
+                <div className="min-w-0">
+                  <p className="truncate font-display text-base font-bold">{t.title}</p>
+                  <p className="text-xs text-ink-soft">{t.author.displayName}</p>
+                </div>
               </div>
               <div className="text-right text-xs text-ink-soft">
                 <p className="font-semibold">Сообщений: {t._count.posts}</p>

@@ -1,5 +1,6 @@
 import { requireGod } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { ROLE_LABELS } from "@/lib/labels";
 import { RoleToggle } from "./RoleToggle";
@@ -20,9 +21,12 @@ export default async function ManageUsersPage() {
       <div className="flex flex-col gap-3">
         {users.map((u) => (
           <div key={u.id} className="brutal-card flex flex-wrap items-center justify-between gap-3 p-4">
-            <div>
+            <div className="flex items-center gap-3">
+              <Avatar name={u.displayName} url={u.avatarUrl} />
+              <div>
               <p className="font-display text-base font-bold">{u.displayName}</p>
               <p className="text-xs text-ink-soft">{u.username ? `@${u.username}` : u.email}</p>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone={u.role === "GOD" ? "coral" : u.role === "TEACHER" ? "violet" : "lime"}>

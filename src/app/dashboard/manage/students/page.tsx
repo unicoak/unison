@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { Avatar } from "@/components/ui/Avatar";
 import { LinkButton } from "@/components/ui/Button";
 
 export default async function ManageStudentsPage() {
@@ -29,7 +30,8 @@ export default async function ManageStudentsPage() {
               href={`/dashboard/manage/students/${s.id}`}
               className="brutal-card flex items-center justify-between gap-3 p-4"
             >
-              <div>
+              <Avatar name={s.displayName} url={s.avatarUrl} />
+              <div className="min-w-0 flex-1">
                 <p className="font-display text-base font-bold">{s.displayName}</p>
                 <p className="text-xs text-ink-soft">{s.username ? `@${s.username}` : s.email}</p>
               </div>
