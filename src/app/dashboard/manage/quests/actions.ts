@@ -119,7 +119,13 @@ export async function reviewSubmissionAction(_prev: ActionState, formData: FormD
   });
 
   if (delta !== 0) {
-    await awardXp(submission.studentId, delta);
+    await awardXp(submission.studentId, delta, {
+      reason:
+        previouslyAwarded > 0
+          ? `Пересмотр решения по квесту «${submission.quest.title}»`
+          : `Квест «${submission.quest.title}»`,
+      createdById: session.user.id,
+    });
   }
 
   if (decision === "APPROVED") {

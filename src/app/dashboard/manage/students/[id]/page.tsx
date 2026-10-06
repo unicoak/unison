@@ -5,13 +5,14 @@ import { getStudentXpSummary } from "@/lib/xp";
 import { XpBar } from "@/components/ui/XpBar";
 import { Badge } from "@/components/ui/Badge";
 import { SUBMISSION_STATUS_LABELS } from "@/lib/labels";
+import { XpHistoryList } from "@/components/dashboard/XpHistoryList";
 import { ManualXpForm, AwardAchievementForm, DeleteStudentButton } from "./StudentActions";
 
 export default async function ManageStudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   await requireStaff();
 
-  const [student, summary, submissions, allAchievements, earnedAchievementIds] = await Promise.all([
+  const [student, summary, submissions, allAchievements, earnedAchievementIds, xpHistory] = await Promise.all([
     prisma.user.findUnique({ where: { id, role: "STUDENT" } }),
     getStudentXpSummary(id),
     prisma.questSubmission.findMany({
@@ -22,6 +23,7 @@ export default async function ManageStudentDetailPage({ params }: { params: Prom
     }),
     prisma.achievement.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.userAchievement.findMany({ where: { userId: id }, select: { achievementId: true } }),
+    prisma.xpTransaction.findMany({ where: { userId: id }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 20 }),
   ]);
 
   if (!student) notFound();
@@ -55,6 +57,11 @@ export default async function ManageStudentDetailPage({ params }: { params: Prom
         <ManualXpForm studentId={id} />
         <AwardAchievementForm studentId={id} achievements={availableAchievements} />
       </div>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="font-display text-lg font-bold">История опыта</h2>
+        <XpHistoryList items={xpHistory} />
+      </section>
 
       <section className="flex flex-col gap-3">
         <h2 className="font-display text-lg font-bold">История сдач</h2>

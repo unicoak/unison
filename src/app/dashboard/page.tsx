@@ -46,6 +46,11 @@ export default async function DashboardHome() {
             isMaxLevel={summary.isMaxLevel}
           />
         )}
+        {summary && (
+          <Link href="/dashboard/xp" className="-mt-3 self-start text-sm font-semibold text-violet hover:underline">
+            История опыта →
+          </Link>
+        )}
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div className="brutal-card p-4 text-center">

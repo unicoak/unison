@@ -11,7 +11,7 @@ import { checkLevelAchievements } from "@/lib/achievements";
 export type ActionState = { error?: string; success?: string } | undefined;
 
 export async function manualXpAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireStaff();
+  const session = await requireStaff();
 
   const parsed = manualXpSchema.safeParse({
     studentId: formData.get("studentId"),
@@ -20,8 +20,11 @@ export async function manualXpAction(_prev: ActionState, formData: FormData): Pr
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Проверьте поля" };
 
-  const { studentId, amount } = parsed.data;
-  const result = await awardXp(studentId, amount);
+  const { studentId, amount, reason } = parsed.data;
+  const result = await awardXp(studentId, amount, {
+    reason: reason || (amount >= 0 ? "Начисление от учителя" : "Списание учителем"),
+    createdById: session.user.id,
+  });
   await checkLevelAchievements(studentId, result.level);
 
   revalidatePath(`/dashboard/manage/students/${studentId}`);

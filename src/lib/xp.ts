@@ -47,12 +47,17 @@ export async function getStudentXpSummary(userId: string) {
  * Increments a student's XP, recomputes level/title, and reports whether
  * the student leveled up (so the caller can trigger a celebration).
  */
-export async function awardXp(userId: string, amount: number) {
+export async function awardXp(userId: string, amount: number, entry?: { reason: string; createdById?: string }) {
   const defs = await getLevelDefinitions();
   const beforeUpdate = await prisma.studentProfile.update({
     where: { userId },
     data: { xp: { increment: amount } },
   });
+  if (amount !== 0) {
+    await prisma.xpTransaction.create({
+      data: { userId, amount, reason: entry?.reason ?? "Изменение опыта", createdById: entry?.createdById },
+    });
+  }
   const result = computeLevelFromDefs(beforeUpdate.xp, defs);
   const leveledUp = result.level > beforeUpdate.level;
 
