@@ -2,8 +2,8 @@ import { ButtonHTMLAttributes, forwardRef } from "react";
 import Link from "next/link";
 
 const VARIANTS = {
-  primary: "bg-lime text-ink hover:bg-lime-deep",
-  violet: "bg-violet text-white hover:bg-violet-deep",
+  primary: "bg-blue text-white hover:bg-blue-deep",
+  violet: "bg-blue text-white hover:bg-blue-deep",
   coral: "bg-coral text-white hover:brightness-95",
   ghost: "bg-white text-ink hover:bg-paper-dim",
   dark: "bg-ink text-white hover:bg-black",

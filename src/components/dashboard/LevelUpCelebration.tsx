@@ -55,7 +55,7 @@ export function LevelUpCelebration({ level, title }: { level: number; title: str
             <p className="mt-1 font-display text-2xl font-bold">{title}</p>
             <p className="mt-3 text-sm text-ink-soft">Так держать — продолжай сдавать квесты!</p>
 
-            <button onClick={close} className="brutal-btn mt-6 w-full bg-lime text-ink">
+            <button onClick={close} className="brutal-btn mt-6 w-full bg-blue text-white">
               Погнали дальше
             </button>
           </motion.div>

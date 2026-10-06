@@ -9,7 +9,7 @@ export default function DashboardError({ reset }: { error: Error & { digest?: st
         Не получилось выполнить действие — возможно, дело в слишком большом файле или временных проблемах связи.
         Попробуйте ещё раз, а если файл видео — попробуйте прислать ссылку на облако вместо самого файла.
       </p>
-      <button onClick={() => reset()} className="brutal-btn bg-lime text-ink">
+      <button onClick={() => reset()} className="brutal-btn bg-blue text-white">
         Попробовать снова
       </button>
     </div>

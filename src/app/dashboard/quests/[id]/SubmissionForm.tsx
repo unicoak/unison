@@ -113,7 +113,7 @@ export function SubmissionForm({
           multiple
           accept="image/*,video/*"
           onChange={(e) => setFileNames(Array.from(e.target.files ?? []).map((f) => f.name))}
-          className="block w-full rounded-xl border-2 border-dashed border-ink bg-white px-4 py-6 text-sm file:mr-3 file:rounded-lg file:border-2 file:border-ink file:bg-lime file:px-3 file:py-1.5 file:font-display file:text-xs file:font-semibold"
+          className="block w-full rounded-xl border-2 border-dashed border-ink bg-white px-4 py-6 text-sm file:mr-3 file:rounded-lg file:border-2 file:border-ink file:bg-blue file:text-white file:px-3 file:py-1.5 file:font-display file:text-xs file:font-semibold"
         />
         {fileNames.length > 0 && (
           <p className="mt-1.5 text-xs text-ink-soft">Выбрано: {fileNames.join(", ")}</p>

@@ -71,7 +71,7 @@ export function NewQuestForm({
             name="assignToAll"
             defaultChecked
             onChange={(e) => setAssignToAll(e.target.checked)}
-            className="h-5 w-5 rounded border-2 border-ink accent-lime"
+            className="h-5 w-5 rounded border-2 border-ink accent-blue"
           />
           Назначить всем ученикам
         </label>

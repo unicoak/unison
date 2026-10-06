@@ -4,11 +4,13 @@
   --font-display: var(--font-unbounded), "Arial Black", sans-serif;
   --font-body: var(--font-golos), "Segoe UI", sans-serif;
 
-  --color-paper: #fbf6ec;
-  --color-paper-dim: #f2ead9;
+  --color-paper: #d8ecff;
+  --color-paper-dim: #bfdcf8;
   --color-ink: #14121a;
   --color-ink-soft: #4a4658;
 
+  --color-blue: #2563eb;
+  --color-blue-deep: #1d4ed8;
   --color-lime: #c6ff3d;
   --color-lime-deep: #9fd400;
   --color-violet: #7c5cfc;
