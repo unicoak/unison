@@ -14,22 +14,36 @@ export default async function AchievementsPage() {
   ]);
 
   const earnedMap = new Map(earned.map((e) => [e.achievementId, e.awardedAt]));
-  // Secret achievements stay hidden (and uncounted) until the student earns them.
-  const visible = achievements.filter((a) => !a.secret || earnedMap.has(a.id));
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-display text-3xl font-extrabold">Ачивки</h1>
         <p className="mt-1 text-ink-soft">
-          Получено {earned.length} из {visible.length}
+          Получено {earned.length} из {achievements.length}
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {visible.map((a) => {
+        {achievements.map((a) => {
           const awardedAt = earnedMap.get(a.id);
           const isEarned = !!awardedAt;
+
+          // Secret and not yet earned: show only a placeholder, never the real
+          // name, icon or description.
+          if (a.secret && !isEarned) {
+            return (
+              <div
+                key={a.id}
+                className="sticker brutal-card flex flex-col items-center gap-2 bg-paper-dim p-5 text-center"
+              >
+                <span className="text-4xl">❓</span>
+                <p className="font-display text-sm font-bold">Секретная ачивка</p>
+                <p className="text-xs text-ink-soft">Условие скрыто. Узнаешь, когда получишь.</p>
+              </div>
+            );
+          }
+
           return (
             <div
               key={a.id}
@@ -50,7 +64,7 @@ export default async function AchievementsPage() {
         })}
       </div>
 
-      {visible.length === 0 && (
+      {achievements.length === 0 && (
         <p className="brutal-card p-6 text-sm text-ink-soft">Ачивок пока нет — учитель их скоро добавит.</p>
       )}
     </div>
