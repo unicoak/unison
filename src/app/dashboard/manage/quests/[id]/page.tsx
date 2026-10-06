@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
-import { formatMoscowDateTime } from "@/lib/quests";
+import { formatSiteDateTime } from "@/lib/quests";
 import { Badge } from "@/components/ui/Badge";
 import { SUBMISSION_STATUS_LABELS } from "@/lib/labels";
 import { ReviewPanel } from "./ReviewPanel";
@@ -35,7 +35,7 @@ export default async function ManageQuestDetailPage({ params }: { params: Promis
           <div className="flex items-center gap-2">
             <Badge tone="violet">+{quest.xpReward} XP</Badge>
             {quest.availableAt && quest.availableAt > new Date() && (
-              <Badge tone="sky">Откроется {formatMoscowDateTime(quest.availableAt)}</Badge>
+              <Badge tone="sky">Откроется {formatSiteDateTime(quest.availableAt)}</Badge>
             )}
             {quest.achievement && (
               <Badge tone="sun">

@@ -42,7 +42,7 @@ export function NewQuestForm({
         <Label htmlFor="availableAt">Открыть для учеников</Label>
         <Input id="availableAt" name="availableAt" type="datetime-local" />
         <p className="mt-1.5 text-xs text-ink-soft">
-          Московское время. Если оставить пустым, квест откроется сразу. До этого момента ученики его не видят.
+          Сахалинское время. Если оставить пустым, квест откроется сразу. До этого момента ученики его не видят.
         </p>
       </div>
 

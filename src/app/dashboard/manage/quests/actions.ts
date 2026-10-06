@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
-import { parseMoscowDateTime } from "@/lib/quests";
+import { parseSiteDateTime } from "@/lib/quests";
 import { questSchema, reviewSchema } from "@/lib/validation";
 import { awardXp, getStudentXpSummary } from "@/lib/xp";
 import { checkSubmissionAchievements, checkLevelAchievements, grantQuestAchievement } from "@/lib/achievements";
@@ -29,7 +29,7 @@ export async function createQuestAction(_prev: ActionState, formData: FormData):
   }
 
   const { title, description, xpReward, dueAt, achievementId, assigneeIds, availableAt } = parsed.data;
-  const availableAtDate = availableAt ? parseMoscowDateTime(availableAt) : null;
+  const availableAtDate = availableAt ? parseSiteDateTime(availableAt) : null;
   if (availableAt && !availableAtDate) return { error: "Некорректная дата открытия квеста" };
 
   const assignToAll = formData.get("assignToAll") === "on";

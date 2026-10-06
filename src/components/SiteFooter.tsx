@@ -10,7 +10,7 @@ function formatBuildTime(iso: string) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "Europe/Moscow",
+    timeZone: "Asia/Sakhalin",
   }).format(new Date(iso));
 }
 
@@ -24,7 +24,7 @@ export function SiteFooter({ className = "" }: { className?: string }) {
       <p className="mt-0.5">
         v{version}
         {commit ? ` (${commit})` : ""}
-        {buildTime ? ` · сборка ${formatBuildTime(buildTime)} МСК` : ""}
+        {buildTime ? ` · сборка ${formatBuildTime(buildTime)} (сахалинское)` : ""}
       </p>
     </footer>
   );
