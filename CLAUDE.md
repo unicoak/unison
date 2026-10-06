@@ -52,6 +52,14 @@ Next.js 15 (App Router) · TypeScript · Tailwind CSS v4 · Prisma + PostgreSQL 
    `prisma migrate deploy && npm run seed && next start` как Start command, дождаться
    одного успешного деплоя, вернуть обратно на `npm start`.
 
+   **Проверено 2026-10-06:** `prisma migrate deploy` в Build command не работает — на сборке
+   база недоступна (`P1001: Can't reach database server at 192.168.0.4:5432`). В Start command
+   (`npx prisma migrate deploy && npm start`) миграции применяются, но сайт уходит в цикл
+   перезапусков (SIGTERM от health-check), пока команду не вернут на `npm start`.
+   Новая миграция ломает код, который её использует, поэтому порядок такой: сначала миграция,
+   потом код. Планируется накатывать миграции с локальной машины через внешний доступ к БД
+   (с ограничением по IP), чтобы не менять команды в Timeweb.
+
 2. **Файлы домашек — только через S3, не на локальный диск.**
    `/app/public` в контейнере доступен только на чтение — попытка писать туда падает с
    `EACCES: permission denied`. `src/lib/storage.ts` шлёт файлы в S3 при заданных `S3_*`
