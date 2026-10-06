@@ -58,7 +58,8 @@ export default function LandingPage() {
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] sm:text-5xl">
             {SITE_TAGLINE}
           </h1>
-          <p className="mt-5 max-w-md text-lg text-ink-soft">
+          <p className="font-script mt-4 text-3xl font-bold text-blue">Создавай свой контент — меняй мир!</p>
+          <p className="mt-4 max-w-md text-lg text-ink-soft">
             Домашка превращается в квесты, баллы — в уровни, а старания — в звания и ачивки.
             Учитель ведёт класс, ученик прокачивается, всё в одном месте.
           </p>
@@ -120,7 +121,7 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-20 md:px-8">
-        <div className="brutal-card flex flex-col items-center gap-4 bg-ink p-10 text-center text-paper">
+        <div className="brutal-card flex flex-col items-center gap-4 bg-navy p-10 text-center text-white">
           <p className="font-display text-2xl font-extrabold sm:text-3xl">Готовы качать скиллы?</p>
           <LinkButton href="/register" variant="primary" size="lg">
             Создать аккаунт бесплатно

@@ -22,7 +22,7 @@ export function SidebarLinks({ items }: { items: NavItem[] }) {
             href={item.href}
             className={`flex items-center gap-3 rounded-xl border-2 px-4 py-3 font-display text-sm font-semibold transition ${
               active
-                ? "border-ink bg-blue text-white shadow-hard-sm"
+                ? "border-transparent bg-blue text-white shadow-hard-sm"
                 : "border-transparent text-ink-soft hover:border-ink hover:bg-white"
             }`}
           >

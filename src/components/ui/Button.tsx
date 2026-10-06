@@ -5,8 +5,8 @@ const VARIANTS = {
   primary: "bg-blue text-white hover:bg-blue-deep",
   violet: "bg-blue text-white hover:bg-blue-deep",
   coral: "bg-coral text-white hover:brightness-95",
-  ghost: "bg-white text-ink hover:bg-paper-dim",
-  dark: "bg-ink text-white hover:bg-black",
+  ghost: "bg-white text-ink ring-1 ring-line hover:bg-paper-dim",
+  dark: "bg-navy text-white hover:bg-ink",
 } as const;
 
 const SIZES = {

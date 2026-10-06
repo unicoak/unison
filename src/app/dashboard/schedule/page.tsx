@@ -24,7 +24,7 @@ export default async function SchedulePage() {
         <div className="grid gap-4 md:grid-cols-7">
           {byDay.map((daySlots, i) => (
             <div key={i} className="flex flex-col gap-2">
-              <p className="sticky top-20 rounded-lg border-2 border-ink bg-ink px-3 py-1.5 text-center font-display text-sm font-bold text-white">
+              <p className="sticky top-20 rounded-lg bg-navy px-3 py-1.5 text-center font-display text-sm font-bold text-white">
                 {DAY_LABELS[i + 1]}
               </p>
               <div className="flex flex-col gap-2">

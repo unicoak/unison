@@ -4,7 +4,7 @@ const TONES = {
   coral: "bg-coral text-white",
   sky: "bg-sky text-ink",
   sun: "bg-sun text-ink",
-  ink: "bg-ink text-white",
+  ink: "bg-navy text-white",
   paper: "bg-white text-ink",
 } as const;
 
@@ -19,7 +19,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border-2 border-ink px-3 py-1 font-display text-xs font-semibold uppercase tracking-wide ${TONES[tone]} ${className}`}
+      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-display text-xs font-semibold uppercase tracking-wide ${TONES[tone]} ${className}`}
     >
       {children}
     </span>

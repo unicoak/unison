@@ -5,12 +5,12 @@ import { SITE_NAME, SITE_TAGLINE } from "@/lib/brand";
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-ink p-10 text-paper lg:flex">
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-navy p-10 text-white lg:flex">
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 20% 20%, var(--color-violet) 0, transparent 45%), radial-gradient(circle at 80% 70%, var(--color-coral) 0, transparent 45%)",
+              "radial-gradient(circle at 20% 20%, var(--color-blue) 0, transparent 50%), radial-gradient(circle at 80% 70%, var(--color-lime) 0, transparent 45%)",
           }}
         />
         <Link href="/" className="relative font-display text-2xl font-extrabold">

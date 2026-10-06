@@ -1,7 +1,7 @@
 import { InputHTMLAttributes, TextareaHTMLAttributes, forwardRef } from "react";
 
 const fieldClass =
-  "w-full rounded-xl border-2 border-ink bg-white px-4 py-3 font-body text-ink placeholder:text-ink-soft/60 outline-none transition focus:-translate-y-0.5 focus:shadow-hard-sm";
+  "w-full rounded-xl border-2 border-ink bg-white px-4 py-3 font-body text-ink placeholder:text-ink-soft/60 outline-none transition focus:border-blue focus:shadow-hard-sm";
 
 export function Label({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
   return (

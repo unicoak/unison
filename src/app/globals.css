@@ -1,27 +1,29 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: var(--font-unbounded), "Arial Black", sans-serif;
+  --font-display: var(--font-montserrat), "Arial Black", sans-serif;
   --font-body: var(--font-golos), "Segoe UI", sans-serif;
 
-  --color-paper: #d8ecff;
-  --color-paper-dim: #bfdcf8;
-  --color-ink: #14121a;
-  --color-ink-soft: #4a4658;
+  --color-paper: #eaf4ff;
+  --color-paper-dim: #d3e7fb;
+  --color-ink: #0c2559;
+  --color-ink-soft: #46598a;
+  --color-line: #b7d2f3;
 
-  --color-blue: #2563eb;
-  --color-blue-deep: #1d4ed8;
-  --color-lime: #c6ff3d;
-  --color-lime-deep: #9fd400;
-  --color-violet: #7c5cfc;
-  --color-violet-deep: #5b3ff0;
+  --color-blue: #1c6ef2;
+  --color-blue-deep: #0f4fc4;
+  --color-navy: #0c2a6e;
+  --color-lime: #3ee0b5;
+  --color-lime-deep: #1fc29a;
+  --color-violet: #1c6ef2;
+  --color-violet-deep: #0f4fc4;
   --color-coral: #ff5d73;
-  --color-sky: #38d3e0;
+  --color-sky: #4cc4f2;
   --color-sun: #ffc93c;
 
-  --shadow-hard-sm: 3px 3px 0 0 var(--color-ink);
-  --shadow-hard: 5px 5px 0 0 var(--color-ink);
-  --shadow-hard-lg: 8px 8px 0 0 var(--color-ink);
+  --shadow-hard-sm: 0 3px 10px rgba(28, 110, 242, 0.2);
+  --shadow-hard: 0 8px 24px rgba(28, 110, 242, 0.16);
+  --shadow-hard-lg: 0 12px 32px rgba(28, 110, 242, 0.24);
 }
 
 html {
@@ -33,8 +35,11 @@ body {
   color: var(--color-ink);
   font-family: var(--font-body);
   background-image:
-    radial-gradient(circle at 1px 1px, rgba(20, 18, 26, 0.08) 1px, transparent 0);
-  background-size: 22px 22px;
+    radial-gradient(circle at 0% 0%, rgba(28, 110, 242, 0.22) 0, transparent 45%),
+    radial-gradient(circle at 100% 18%, rgba(62, 224, 181, 0.22) 0, transparent 40%),
+    radial-gradient(circle at 0% 100%, rgba(28, 110, 242, 0.18) 0, transparent 45%),
+    radial-gradient(circle at 100% 100%, rgba(62, 224, 181, 0.2) 0, transparent 40%);
+  background-attachment: fixed;
 }
 
 ::selection {
@@ -48,19 +53,19 @@ body {
 
 /* Neo-brutalist building blocks used across the app */
 .border-ink {
-  border-color: var(--color-ink);
+  border-color: var(--color-line);
 }
 
 .brutal-card {
   background-color: #fff;
-  border: 2.5px solid var(--color-ink);
-  border-radius: 1.1rem;
+  border: 1.5px solid var(--color-line);
+  border-radius: 1.4rem;
   box-shadow: var(--shadow-hard);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .brutal-card:hover {
-  transform: translate(-2px, -2px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-hard-lg);
 }
 
@@ -71,8 +76,8 @@ body {
   gap: 0.5rem;
   font-family: var(--font-display);
   font-weight: 600;
-  border: 2.5px solid var(--color-ink);
-  border-radius: 0.85rem;
+  border: 0;
+  border-radius: 999px;
   padding: 0.75rem 1.5rem;
   box-shadow: var(--shadow-hard-sm);
   transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
@@ -80,13 +85,13 @@ body {
 }
 
 .brutal-btn:hover {
-  transform: translate(-2px, -2px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-hard);
 }
 
 .brutal-btn:active {
-  transform: translate(0, 0);
-  box-shadow: none;
+  transform: translateY(0);
+  box-shadow: var(--shadow-hard-sm);
 }
 
 .sticker {
@@ -120,4 +125,8 @@ body {
 
 .animate-pop-in {
   animation: pop-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.font-script {
+  font-family: var(--font-caveat), "Segoe Script", cursive;
 }
