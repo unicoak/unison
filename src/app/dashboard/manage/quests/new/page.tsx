@@ -11,10 +11,15 @@ export default async function NewQuestPage() {
     orderBy: { displayName: "asc" },
   });
 
+  const achievements = await prisma.achievement.findMany({
+    select: { id: true, name: true, icon: true },
+    orderBy: { createdAt: "asc" },
+  });
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="font-display text-3xl font-extrabold">Новый квест</h1>
-      <NewQuestForm students={students} />
+      <NewQuestForm students={students} achievements={achievements} />
     </div>
   );
 }

@@ -5,7 +5,13 @@ import { createQuestAction } from "../actions";
 import { Label, Input, Textarea, FieldError } from "@/components/ui/FormField";
 import { Button } from "@/components/ui/Button";
 
-export function NewQuestForm({ students }: { students: { id: string; displayName: string }[] }) {
+export function NewQuestForm({
+  students,
+  achievements,
+}: {
+  students: { id: string; displayName: string }[];
+  achievements: { id: string; name: string; icon: string }[];
+}) {
   const [state, formAction, pending] = useActionState(createQuestAction, undefined);
   const [assignToAll, setAssignToAll] = useState(true);
 
@@ -30,6 +36,24 @@ export function NewQuestForm({ students }: { students: { id: string; displayName
           <Label htmlFor="dueAt">Дедлайн</Label>
           <Input id="dueAt" name="dueAt" type="date" />
         </div>
+      </div>
+
+      <div>
+        <Label htmlFor="achievementId">Ачивка за выполнение</Label>
+        <select
+          id="achievementId"
+          name="achievementId"
+          defaultValue=""
+          className="w-full rounded-xl border-2 border-ink bg-white px-4 py-3 text-sm"
+        >
+          <option value="">Без ачивки</option>
+          {achievements.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.icon} {a.name}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1.5 text-xs text-ink-soft">Выдаётся ученику автоматически, когда вы принимаете его работу.</p>
       </div>
 
       <div>

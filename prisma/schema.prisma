@@ -59,6 +59,7 @@ model Achievement {
   createdAt   DateTime @default(now())
 
   awardedTo UserAchievement[]
+  quests    Quest[]
 }
 
 model UserAchievement {
@@ -89,6 +90,10 @@ model Quest {
   createdById String
   createdBy   User        @relation("QuestCreator", fields: [createdById], references: [id])
   createdAt   DateTime    @default(now())
+
+  // Awarded automatically to the student when their submission is approved.
+  achievementId String?
+  achievement   Achievement? @relation(fields: [achievementId], references: [id], onDelete: SetNull)
 
   assignments QuestAssignment[]
   submissions QuestSubmission[]

@@ -18,6 +18,16 @@ async function grantIfMissing(userId: string, code: string) {
   });
 }
 
+/** Awards the achievement attached to a quest (no-op if already owned). */
+export async function grantQuestAchievement(studentId: string, achievementId: string | null) {
+  if (!achievementId) return;
+  await prisma.userAchievement.upsert({
+    where: { userId_achievementId: { userId: studentId, achievementId } },
+    update: {},
+    create: { userId: studentId, achievementId },
+  });
+}
+
 /** Called after a submission is approved — checks simple milestone triggers. */
 export async function checkSubmissionAchievements(studentId: string) {
   const approvedCount = await prisma.questSubmission.count({

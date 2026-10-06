@@ -21,6 +21,7 @@ export const questSchema = z.object({
   description: z.string().trim().min(3, "Добавьте описание").max(4000),
   xpReward: z.coerce.number().int().min(0).max(100000),
   dueAt: z.string().optional().nullable(),
+  achievementId: z.string().optional(),
   assigneeIds: z.array(z.string()).optional(),
 });
 

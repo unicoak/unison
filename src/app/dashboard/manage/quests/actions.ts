@@ -6,7 +6,7 @@ import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { questSchema, reviewSchema } from "@/lib/validation";
 import { awardXp, getStudentXpSummary } from "@/lib/xp";
-import { checkSubmissionAchievements, checkLevelAchievements } from "@/lib/achievements";
+import { checkSubmissionAchievements, checkLevelAchievements, grantQuestAchievement } from "@/lib/achievements";
 
 export type ActionState = { error?: string } | undefined;
 
@@ -18,6 +18,7 @@ export async function createQuestAction(_prev: ActionState, formData: FormData):
     description: formData.get("description"),
     xpReward: formData.get("xpReward"),
     dueAt: formData.get("dueAt") || undefined,
+    achievementId: formData.get("achievementId") || undefined,
     assigneeIds: formData.getAll("assigneeIds"),
   });
 
@@ -25,7 +26,7 @@ export async function createQuestAction(_prev: ActionState, formData: FormData):
     return { error: parsed.error.issues[0]?.message ?? "Проверьте поля формы" };
   }
 
-  const { title, description, xpReward, dueAt, assigneeIds } = parsed.data;
+  const { title, description, xpReward, dueAt, achievementId, assigneeIds } = parsed.data;
   const assignToAll = formData.get("assignToAll") === "on";
 
   const studentIds = assignToAll
@@ -43,6 +44,7 @@ export async function createQuestAction(_prev: ActionState, formData: FormData):
       xpReward,
       dueAt: dueAt ? new Date(dueAt) : null,
       createdById: session.user.id,
+      achievementId: achievementId ?? null,
       assignments: { create: studentIds.map((studentId) => ({ studentId })) },
     },
   });
@@ -116,11 +118,13 @@ export async function reviewSubmissionAction(_prev: ActionState, formData: FormD
 
   if (decision === "APPROVED") {
     const summary = await getStudentXpSummary(submission.studentId);
+    await grantQuestAchievement(submission.studentId, submission.quest.achievementId);
     await checkSubmissionAchievements(submission.studentId);
     if (summary) await checkLevelAchievements(submission.studentId, summary.level);
   }
 
   revalidatePath(`/dashboard/manage/quests/${submission.questId}`);
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/achievements");
   return {};
 }

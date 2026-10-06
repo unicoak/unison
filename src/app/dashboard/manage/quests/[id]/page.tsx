@@ -14,6 +14,7 @@ export default async function ManageQuestDetailPage({ params }: { params: Promis
   const quest = await prisma.quest.findUnique({
     where: { id },
     include: {
+      achievement: true,
       assignments: { include: { student: true }, orderBy: { student: { displayName: "asc" } } },
       submissions: { include: { files: true } },
     },
@@ -32,6 +33,11 @@ export default async function ManageQuestDetailPage({ params }: { params: Promis
           </div>
           <div className="flex items-center gap-2">
             <Badge tone="violet">+{quest.xpReward} XP</Badge>
+            {quest.achievement && (
+              <Badge tone="sun">
+                {quest.achievement.icon} {quest.achievement.name}
+              </Badge>
+            )}
             {quest.status === "CLOSED" ? <Badge tone="ink">Закрыт</Badge> : <CloseQuestButton questId={quest.id} />}
             <DeleteQuestButton questId={quest.id} />
           </div>

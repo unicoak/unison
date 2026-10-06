@@ -17,7 +17,7 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
   const assignment = await prisma.questAssignment.findUnique({
     where: { questId_studentId: { questId: id, studentId: session.user.id } },
     include: {
-      quest: true,
+      quest: { include: { achievement: true } },
     },
   });
   if (!assignment) notFound();
@@ -45,6 +45,11 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
 
         <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
           <span className="rounded-full bg-violet/10 px-3 py-1 text-violet">+{assignment.quest.xpReward} XP</span>
+          {assignment.quest.achievement && (
+            <span className="rounded-full bg-sun/30 px-3 py-1 text-ink">
+              {assignment.quest.achievement.icon} ачивка: {assignment.quest.achievement.name}
+            </span>
+          )}
           {assignment.quest.dueAt && (
             <span className="rounded-full bg-paper-dim px-3 py-1 text-ink-soft">
               дедлайн: {formatDate(assignment.quest.dueAt)}
