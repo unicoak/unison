@@ -1,5 +1,6 @@
 import { requireRole } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { questOpenedFilter } from "@/lib/quests";
 import { QuestTicket } from "@/components/dashboard/QuestTicket";
 import { Badge } from "@/components/ui/Badge";
 import { SUBMISSION_STATUS_LABELS } from "@/lib/labels";
@@ -8,7 +9,7 @@ export default async function StudentQuestsPage() {
   const session = await requireRole(["STUDENT"]);
 
   const assignments = await prisma.questAssignment.findMany({
-    where: { studentId: session.user.id },
+    where: { studentId: session.user.id, quest: questOpenedFilter() },
     include: { quest: { include: { submissions: { where: { studentId: session.user.id } } } } },
     orderBy: { assignedAt: "desc" },
   });

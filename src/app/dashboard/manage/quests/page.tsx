@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { LinkButton } from "@/components/ui/Button";
+import { formatMoscowDateTime } from "@/lib/quests";
 import { Badge } from "@/components/ui/Badge";
 
 export default async function ManageQuestsPage() {
@@ -37,6 +38,9 @@ export default async function ManageQuestsPage() {
                 <div className="flex items-center gap-2">
                   {pending > 0 && <Badge tone="sun">{pending} на проверке</Badge>}
                   <Badge tone="lime">{approved} принято</Badge>
+                  {q.availableAt && q.availableAt > new Date() && (
+                    <Badge tone="sky">Откроется {formatMoscowDateTime(q.availableAt)}</Badge>
+                  )}
                   {q.status === "CLOSED" && <Badge tone="ink">Закрыт</Badge>}
                 </div>
               </Link>

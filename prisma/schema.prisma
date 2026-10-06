@@ -87,6 +87,8 @@ model Quest {
   description String
   xpReward    Int
   dueAt       DateTime?
+  // Students see the quest only from this moment (null = immediately).
+  availableAt DateTime?
   status      QuestStatus @default(OPEN)
   createdById String
   createdBy   User        @relation("QuestCreator", fields: [createdById], references: [id])

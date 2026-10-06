@@ -18,8 +18,12 @@ export async function submitQuestAction(
 
   const assignment = await prisma.questAssignment.findUnique({
     where: { questId_studentId: { questId, studentId } },
+    include: { quest: { select: { availableAt: true } } },
   });
   if (!assignment) return { error: "Этот квест вам не назначен" };
+  if (assignment.quest.availableAt && assignment.quest.availableAt > new Date()) {
+    return { error: "Этот квест ещё не открыт" };
+  }
 
   const textContent = ((formData.get("textContent") as string) || "").trim() || undefined;
   const linksRaw = (formData.get("links") as string) || "";

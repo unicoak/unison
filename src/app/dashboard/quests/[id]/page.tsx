@@ -21,6 +21,8 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
     },
   });
   if (!assignment) notFound();
+  const { availableAt } = assignment.quest;
+  if (availableAt && availableAt > new Date()) notFound();
 
   const submission = await prisma.questSubmission.findUnique({
     where: { questId_studentId: { questId: id, studentId: session.user.id } },

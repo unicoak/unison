@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireSession } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { questOpenedFilter } from "@/lib/quests";
 import { getStudentXpSummary } from "@/lib/xp";
 import { XpBar } from "@/components/ui/XpBar";
 import { QuestTicket } from "@/components/dashboard/QuestTicket";
@@ -15,7 +16,7 @@ export default async function DashboardHome() {
     const [summary, assignments, achievementCount] = await Promise.all([
       getStudentXpSummary(id),
       prisma.questAssignment.findMany({
-        where: { studentId: id, quest: { status: "OPEN" } },
+        where: { studentId: id, quest: { status: "OPEN", ...questOpenedFilter() } },
         include: { quest: { include: { submissions: { where: { studentId: id } } } } },
         orderBy: { assignedAt: "desc" },
       }),

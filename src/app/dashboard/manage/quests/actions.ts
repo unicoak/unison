@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { parseMoscowDateTime } from "@/lib/quests";
 import { questSchema, reviewSchema } from "@/lib/validation";
 import { awardXp, getStudentXpSummary } from "@/lib/xp";
 import { checkSubmissionAchievements, checkLevelAchievements, grantQuestAchievement } from "@/lib/achievements";
@@ -19,6 +20,7 @@ export async function createQuestAction(_prev: ActionState, formData: FormData):
     xpReward: formData.get("xpReward"),
     dueAt: formData.get("dueAt") || undefined,
     achievementId: formData.get("achievementId") || undefined,
+    availableAt: formData.get("availableAt") || undefined,
     assigneeIds: formData.getAll("assigneeIds"),
   });
 
@@ -26,7 +28,10 @@ export async function createQuestAction(_prev: ActionState, formData: FormData):
     return { error: parsed.error.issues[0]?.message ?? "Проверьте поля формы" };
   }
 
-  const { title, description, xpReward, dueAt, achievementId, assigneeIds } = parsed.data;
+  const { title, description, xpReward, dueAt, achievementId, assigneeIds, availableAt } = parsed.data;
+  const availableAtDate = availableAt ? parseMoscowDateTime(availableAt) : null;
+  if (availableAt && !availableAtDate) return { error: "Некорректная дата открытия квеста" };
+
   const assignToAll = formData.get("assignToAll") === "on";
 
   const studentIds = assignToAll
@@ -45,6 +50,7 @@ export async function createQuestAction(_prev: ActionState, formData: FormData):
       dueAt: dueAt ? new Date(dueAt) : null,
       createdById: session.user.id,
       achievementId: achievementId ?? null,
+      availableAt: availableAtDate,
       assignments: { create: studentIds.map((studentId) => ({ studentId })) },
     },
   });
