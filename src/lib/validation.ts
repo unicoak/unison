@@ -86,3 +86,27 @@ export const forumPostSchema = z.object({
   topicId: z.string().min(1),
   body: z.string().trim().min(1, "Напишите сообщение").max(4000),
 });
+
+export const levelLadderSchema = z
+  .array(
+    z.object({
+      title: z.string().trim().min(1, "У каждого уровня должно быть название").max(40, "Название уровня: максимум 40 символов"),
+      requiredXp: z.coerce.number().int("XP — целое число").min(0, "XP не может быть отрицательным").max(10000000),
+    }),
+  )
+  .min(1, "Нужен хотя бы один уровень")
+  .max(50, "Не больше 50 уровней")
+  .superRefine((rows, ctx) => {
+    if (rows[0] && rows[0].requiredXp !== 0) {
+      ctx.addIssue({ code: "custom", message: "Первый уровень должен начинаться с 0 XP" });
+    }
+    for (let i = 1; i < rows.length; i++) {
+      if (rows[i].requiredXp <= rows[i - 1].requiredXp) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Уровень ${i + 1}: XP должен быть больше, чем у уровня ${i}`,
+        });
+        break;
+      }
+    }
+  });
