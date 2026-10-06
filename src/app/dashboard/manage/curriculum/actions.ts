@@ -5,11 +5,9 @@ import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { curriculumSectionSchema } from "@/lib/validation";
 
-export type ActionState = { error?: string } | undefined;
+export type ActionState = { error?: string; success?: string } | undefined;
 
-export async function createCurriculumSectionAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireStaff();
-
+function parseSectionForm(formData: FormData) {
   const linksRaw = (formData.get("resources") as string) || "";
   const resources = linksRaw
     .split("\n")
@@ -20,21 +18,48 @@ export async function createCurriculumSectionAction(_prev: ActionState, formData
       return { label: label || url, url: url || label };
     });
 
-  const parsed = curriculumSectionSchema.safeParse({
+  return curriculumSectionSchema.safeParse({
     title: formData.get("title"),
     order: formData.get("order"),
     period: formData.get("period"),
     description: formData.get("description"),
     resources,
   });
+}
+
+function revalidateCurriculum() {
+  revalidatePath("/dashboard/manage/curriculum");
+  revalidatePath("/dashboard/curriculum");
+}
+
+export async function createCurriculumSectionAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireStaff();
+
+  const parsed = parseSectionForm(formData);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Проверьте поля" };
 
   await prisma.curriculumSection.create({
     data: { ...parsed.data, resources: parsed.data.resources ?? [] },
   });
-  revalidatePath("/dashboard/manage/curriculum");
-  revalidatePath("/dashboard/curriculum");
+  revalidateCurriculum();
   return {};
+}
+
+export async function updateCurriculumSectionAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireStaff();
+
+  const id = String(formData.get("id") ?? "");
+  const parsed = parseSectionForm(formData);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Проверьте поля" };
+
+  const result = await prisma.curriculumSection.updateMany({
+    where: { id },
+    data: { ...parsed.data, resources: parsed.data.resources ?? [] },
+  });
+  if (result.count === 0) return { error: "Раздел не найден" };
+
+  revalidateCurriculum();
+  return { success: "Сохранено" };
 }
 
 export async function deleteCurriculumSectionAction(sectionId: string) {

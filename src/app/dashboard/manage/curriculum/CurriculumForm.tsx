@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createCurriculumSectionAction } from "./actions";
+import { createCurriculumSectionAction, updateCurriculumSectionAction } from "./actions";
 import { Label, Input, Textarea, FieldError } from "@/components/ui/FormField";
 import { Button } from "@/components/ui/Button";
 
@@ -37,6 +37,55 @@ export function CurriculumForm() {
       <Button type="submit" disabled={pending} className="self-start">
         {pending ? "…" : "Добавить"}
       </Button>
+    </form>
+  );
+}
+
+export type EditableSection = {
+  id: string;
+  order: number;
+  period: string;
+  title: string;
+  description: string;
+  resources: string;
+};
+
+export function EditCurriculumForm({ section }: { section: EditableSection }) {
+  const [state, formAction, pending] = useActionState(updateCurriculumSectionAction, undefined);
+  const p = section.id;
+
+  return (
+    <form action={formAction} className="mt-3 flex flex-col gap-3 border-t-2 border-ink/10 pt-3">
+      <input type="hidden" name="id" value={section.id} />
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div>
+          <Label htmlFor={`order-${p}`}>№ по порядку</Label>
+          <Input id={`order-${p}`} name="order" type="number" defaultValue={section.order} required />
+        </div>
+        <div className="sm:col-span-2">
+          <Label htmlFor={`period-${p}`}>Период</Label>
+          <Input id={`period-${p}`} name="period" defaultValue={section.period} required />
+        </div>
+      </div>
+      <div>
+        <Label htmlFor={`title-${p}`}>Название темы</Label>
+        <Input id={`title-${p}`} name="title" defaultValue={section.title} required />
+      </div>
+      <div>
+        <Label htmlFor={`description-${p}`}>Описание</Label>
+        <Textarea id={`description-${p}`} name="description" defaultValue={section.description} required />
+      </div>
+      <div>
+        <Label htmlFor={`resources-${p}`}>Материалы (по одному на строку: Название | https://ссылка)</Label>
+        <Textarea id={`resources-${p}`} name="resources" className="min-h-16" defaultValue={section.resources} />
+      </div>
+      <div className="flex items-center gap-3">
+        <Button type="submit" disabled={pending} size="sm" variant="violet">
+          {pending ? "…" : "Сохранить"}
+        </Button>
+        <FieldError>{state?.error}</FieldError>
+        {state?.success && <p className="text-sm font-semibold text-violet">{state.success}</p>}
+      </div>
     </form>
   );
 }
