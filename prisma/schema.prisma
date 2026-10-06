@@ -29,6 +29,10 @@ model User {
   reviewedSubmissions QuestSubmission[] @relation("SubmissionReviewer")
   achievementsGiven   UserAchievement[] @relation("AchievementAwarder")
   achievements        UserAchievement[] @relation("AchievementOwner")
+  createdTests        Test[]            @relation("TestCreator")
+  testAssignments     TestAssignment[]
+  testAttempts        TestAttempt[]     @relation("AttemptStudent")
+  reviewedAttempts    TestAttempt[]     @relation("AttemptReviewer")
   forumTopics         ForumTopic[]
   forumPosts          ForumPost[]
 }
@@ -204,4 +208,99 @@ model ForumPost {
   createdAt DateTime   @default(now())
 
   @@index([topicId, createdAt])
+}
+
+enum TestQuestionType {
+  CHOICE // pick one of the prepared options, graded automatically
+  TEXT   // free-form answer, graded by a teacher
+}
+
+enum TestAttemptStatus {
+  SUBMITTED // waiting for a teacher to grade the free-form answers
+  GRADED
+}
+
+model Test {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  createdById String
+  createdBy   User     @relation("TestCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  questions   TestQuestion[]
+  assignments TestAssignment[]
+  attempts    TestAttempt[]
+}
+
+model TestQuestion {
+  id       String           @id @default(cuid())
+  testId   String
+  test     Test             @relation(fields: [testId], references: [id], onDelete: Cascade)
+  order    Int
+  type     TestQuestionType
+  text     String
+  imageUrl String?
+  points   Int              @default(1)
+
+  options TestOption[]
+  answers TestAnswer[]
+
+  @@index([testId, order])
+}
+
+model TestOption {
+  id         String       @id @default(cuid())
+  questionId String
+  question   TestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  order      Int
+  text       String
+  isCorrect  Boolean      @default(false)
+
+  answers TestAnswer[]
+}
+
+model TestAssignment {
+  id         String   @id @default(cuid())
+  testId     String
+  test       Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assignedAt DateTime @default(now())
+
+  @@unique([testId, studentId])
+}
+
+model TestAttempt {
+  id           String            @id @default(cuid())
+  testId       String
+  test         Test              @relation(fields: [testId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      User              @relation("AttemptStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  status       TestAttemptStatus @default(SUBMITTED)
+  score        Int               @default(0)
+  maxScore     Int
+  submittedAt  DateTime          @default(now())
+  reviewedAt   DateTime?
+  reviewedById String?
+  reviewedBy   User?             @relation("AttemptReviewer", fields: [reviewedById], references: [id])
+
+  answers TestAnswer[]
+
+  @@unique([testId, studentId])
+}
+
+model TestAnswer {
+  id             String       @id @default(cuid())
+  attemptId      String
+  attempt        TestAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId     String
+  question       TestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionId       String?
+  option         TestOption?  @relation(fields: [optionId], references: [id], onDelete: SetNull)
+  textAnswer     String?
+  pointsAwarded  Int?
+  teacherComment String?
+
+  @@unique([attemptId, questionId])
 }
