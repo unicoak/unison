@@ -59,6 +59,35 @@ export async function createQuestAction(_prev: ActionState, formData: FormData):
   redirect(`/dashboard/manage/quests/${quest.id}`);
 }
 
+export type AssignQuestState = { error?: string; success?: string } | undefined;
+
+export async function assignQuestAction(_prev: AssignQuestState, formData: FormData): Promise<AssignQuestState> {
+  await requireStaff();
+
+  const questId = String(formData.get("questId") ?? "");
+  const studentIds = formData.getAll("studentIds") as string[];
+  if (!questId || studentIds.length === 0) return { error: "Выберите хотя бы одного ученика" };
+
+  const quest = await prisma.quest.findUnique({ where: { id: questId }, select: { id: true } });
+  if (!quest) return { error: "Квест не найден" };
+
+  // Only real students; anyone already assigned is skipped (unique questId+studentId).
+  const students = await prisma.user.findMany({
+    where: { id: { in: studentIds }, role: "STUDENT" },
+    select: { id: true },
+  });
+  const result = await prisma.questAssignment.createMany({
+    data: students.map((s) => ({ questId, studentId: s.id })),
+    skipDuplicates: true,
+  });
+
+  revalidatePath(`/dashboard/manage/quests/${questId}`);
+  revalidatePath("/dashboard/manage/quests");
+  revalidatePath("/dashboard/quests");
+  revalidatePath("/dashboard");
+  return { success: `Квест назначен: ${result.count}` };
+}
+
 export async function closeQuestAction(questId: string) {
   await requireStaff();
   await prisma.quest.update({ where: { id: questId }, data: { status: "CLOSED" } });
