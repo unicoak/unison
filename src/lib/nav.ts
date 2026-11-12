@@ -19,6 +19,7 @@ const STAFF_NAV: NavItem[] = [
   { href: "/dashboard/manage/achievements", label: "Ачивки", icon: "🏅" },
   { href: "/dashboard/manage/tests", label: "Тесты", icon: "📝" },
   { href: "/dashboard/manage/levels", label: "Уровни", icon: "📈" },
+  { href: "/dashboard/manage/export", label: "Выгрузка", icon: "📊" },
   { href: "/dashboard/manage/schedule", label: "Расписание", icon: "🗓️" },
   { href: "/dashboard/manage/curriculum", label: "План", icon: "📚" },
   { href: "/dashboard/forum", label: "Форум", icon: "💬" },

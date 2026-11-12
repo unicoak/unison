@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireGod } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { Avatar } from "@/components/ui/Avatar";
@@ -24,7 +25,13 @@ export default async function ManageUsersPage() {
             <div className="flex items-center gap-3">
               <Avatar name={u.displayName} url={u.avatarUrl} />
               <div>
-              <p className="font-display text-base font-bold">{u.displayName}</p>
+              {u.role === "STUDENT" ? (
+                  <Link href={`/dashboard/manage/students/${u.id}`} className="font-display text-base font-bold hover:text-blue hover:underline">
+                    {u.displayName}
+                  </Link>
+                ) : (
+                  <p className="font-display text-base font-bold">{u.displayName}</p>
+                )}
               <p className="text-xs text-ink-soft">{u.username ? `@${u.username}` : u.email}</p>
               </div>
             </div>

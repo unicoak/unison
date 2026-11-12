@@ -106,17 +106,25 @@ export default async function DashboardHome() {
     );
   }
 
-  const [studentCount, pendingCount, openQuestCount, pendingSubmissions] = await Promise.all([
-    prisma.user.count({ where: { role: "STUDENT" } }),
-    prisma.questSubmission.count({ where: { status: "SUBMITTED" } }),
-    prisma.quest.count({ where: { status: "OPEN" } }),
-    prisma.questSubmission.findMany({
-      where: { status: "SUBMITTED" },
-      include: { quest: true, student: true },
-      orderBy: { submittedAt: "asc" },
-      take: 6,
-    }),
-  ]);
+  const [studentCount, pendingCount, openQuestCount, pendingSubmissions, pendingTestCount, pendingAttempts] =
+    await Promise.all([
+      prisma.user.count({ where: { role: "STUDENT" } }),
+      prisma.questSubmission.count({ where: { status: "SUBMITTED" } }),
+      prisma.quest.count({ where: { status: "OPEN" } }),
+      prisma.questSubmission.findMany({
+        where: { status: "SUBMITTED" },
+        include: { quest: true, student: true },
+        orderBy: { submittedAt: "asc" },
+        take: 6,
+      }),
+      prisma.testAttempt.count({ where: { status: "SUBMITTED" } }),
+      prisma.testAttempt.findMany({
+        where: { status: "SUBMITTED" },
+        include: { test: true, student: true },
+        orderBy: { submittedAt: "asc" },
+        take: 6,
+      }),
+    ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -125,24 +133,28 @@ export default async function DashboardHome() {
         <h1 className="font-display text-3xl font-extrabold">{name} 👋</h1>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="brutal-card p-4 text-center">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Link href="/dashboard/manage/students" className="brutal-card p-4 text-center">
           <p className="font-display text-2xl font-extrabold text-violet">{studentCount}</p>
           <p className="text-xs font-semibold text-ink-soft">учеников</p>
-        </div>
-        <div className="brutal-card p-4 text-center">
+        </Link>
+        <Link href="/dashboard/manage/quests" className="brutal-card p-4 text-center">
           <p className="font-display text-2xl font-extrabold text-coral">{pendingCount}</p>
-          <p className="text-xs font-semibold text-ink-soft">на проверке</p>
-        </div>
-        <div className="brutal-card p-4 text-center">
+          <p className="text-xs font-semibold text-ink-soft">квестов на проверке</p>
+        </Link>
+        <Link href="/dashboard/manage/tests" className="brutal-card p-4 text-center">
+          <p className="font-display text-2xl font-extrabold text-coral">{pendingTestCount}</p>
+          <p className="text-xs font-semibold text-ink-soft">тестов на проверке</p>
+        </Link>
+        <Link href="/dashboard/manage/quests" className="brutal-card p-4 text-center">
           <p className="font-display text-2xl font-extrabold text-sky">{openQuestCount}</p>
           <p className="text-xs font-semibold text-ink-soft">активных квестов</p>
-        </div>
+        </Link>
       </div>
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold">Ждут проверки</h2>
+          <h2 className="font-display text-lg font-bold">Квесты ждут проверки</h2>
           <LinkButton href="/dashboard/manage/quests" variant="ghost" size="sm">
             Все квесты
           </LinkButton>
@@ -153,21 +165,59 @@ export default async function DashboardHome() {
         ) : (
           <div className="flex flex-col gap-3">
             {pendingSubmissions.map((s) => (
-              <Link
-                key={s.id}
-                href={`/dashboard/manage/quests/${s.questId}`}
-                className="brutal-card flex items-center justify-between gap-3 p-4"
-              >
+              <div key={s.id} className="brutal-card flex items-center justify-between gap-3 p-4">
                 <div className="min-w-0">
-                  <p className="truncate font-display text-sm font-bold">{s.quest.title}</p>
-                  <p className="text-xs text-ink-soft">{s.student.displayName}</p>
+                  <Link
+                    href={`/dashboard/manage/quests/${s.questId}`}
+                    className="block truncate font-display text-sm font-bold hover:text-blue hover:underline"
+                  >
+                    {s.quest.title}
+                  </Link>
+                  <Link
+                    href={`/dashboard/manage/students/${s.studentId}`}
+                    className="text-xs text-ink-soft hover:text-blue hover:underline"
+                  >
+                    {s.student.displayName}
+                  </Link>
                 </div>
                 <Badge tone="sun">Новое</Badge>
-              </Link>
+              </div>
             ))}
           </div>
         )}
       </section>
+
+      {pendingAttempts.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-lg font-bold">Тесты ждут проверки</h2>
+            <LinkButton href="/dashboard/manage/tests" variant="ghost" size="sm">
+              Все тесты
+            </LinkButton>
+          </div>
+          <div className="flex flex-col gap-3">
+            {pendingAttempts.map((a) => (
+              <div key={a.id} className="brutal-card flex items-center justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <Link
+                    href={`/dashboard/manage/tests/${a.testId}`}
+                    className="block truncate font-display text-sm font-bold hover:text-blue hover:underline"
+                  >
+                    {a.test.title}
+                  </Link>
+                  <Link
+                    href={`/dashboard/manage/students/${a.studentId}`}
+                    className="text-xs text-ink-soft hover:text-blue hover:underline"
+                  >
+                    {a.student.displayName}
+                  </Link>
+                </div>
+                <Badge tone="sun">Проверить</Badge>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

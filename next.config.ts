@@ -13,6 +13,8 @@ function gitCommit() {
 }
 
 const nextConfig: NextConfig = {
+  // Loaded only when an .xlsx export is requested; keep it out of the bundle.
+  serverExternalPackages: ["exceljs"],
   env: {
     NEXT_PUBLIC_APP_VERSION: pkg.version,
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),

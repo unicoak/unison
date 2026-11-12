@@ -68,7 +68,9 @@ export default async function ManageTestDetailPage({ params }: { params: Promise
           return (
             <div key={a.id} className="brutal-card p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-display text-base font-bold">{a.student.displayName}</p>
+                <Link href={`/dashboard/manage/students/${a.studentId}`} className="font-display text-base font-bold hover:text-blue hover:underline">
+                  {a.student.displayName}
+                </Link>
                 {!attempt ? (
                   <Badge tone="paper">Не сдано</Badge>
                 ) : attempt.status === "SUBMITTED" ? (

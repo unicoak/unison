@@ -11,7 +11,8 @@ const dateFmt = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long"
 
 export default async function ForumTopicPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  await requireSession();
+  const session = await requireSession();
+  const isStaff = session.user.role !== "STUDENT";
 
   const topic = await prisma.forumTopic.findUnique({
     where: { id },
@@ -33,7 +34,13 @@ export default async function ForumTopicPage({ params }: { params: Promise<{ id:
           <div key={p.id} className="brutal-card p-5">
             <div className="flex flex-wrap items-center gap-2">
               <Avatar name={p.author.displayName} url={p.author.avatarUrl} size="sm" />
-              <p className="font-display text-sm font-bold">{p.author.displayName}</p>
+              {isStaff && p.author.role === "STUDENT" ? (
+                <Link href={`/dashboard/manage/students/${p.author.id}`} className="font-display text-sm font-bold hover:text-blue hover:underline">
+                  {p.author.displayName}
+                </Link>
+              ) : (
+                <p className="font-display text-sm font-bold">{p.author.displayName}</p>
+              )}
               {p.author.role !== "STUDENT" && <Badge tone="violet">{ROLE_LABELS[p.author.role]}</Badge>}
               <p className="text-xs text-ink-soft">{dateFmt.format(p.createdAt)}</p>
             </div>

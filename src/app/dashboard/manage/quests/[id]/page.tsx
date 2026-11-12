@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
@@ -37,7 +38,9 @@ export default async function ManageQuestDetailPage({ params }: { params: Promis
       <div className="brutal-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="font-display text-xs font-bold uppercase tracking-widest text-violet">Квест</p>
+            <Link href="/dashboard/manage/quests" className="text-sm font-semibold text-violet hover:underline">
+              ← Все квесты
+            </Link>
             <h1 className="mt-1 font-display text-2xl font-extrabold sm:text-3xl">{quest.title}</h1>
           </div>
           <div className="flex items-center gap-2">
@@ -67,7 +70,9 @@ export default async function ManageQuestDetailPage({ params }: { params: Promis
           return (
             <div key={a.id} className="brutal-card p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-display text-base font-bold">{a.student.displayName}</p>
+                <Link href={`/dashboard/manage/students/${a.studentId}`} className="font-display text-base font-bold hover:text-blue hover:underline">
+                  {a.student.displayName}
+                </Link>
                 {status ? <Badge tone={status.tone}>{status.label}</Badge> : <Badge tone="paper">Не сдано</Badge>}
               </div>
 
