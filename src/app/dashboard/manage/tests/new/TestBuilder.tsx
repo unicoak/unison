@@ -1,13 +1,15 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { createTestAction } from "../actions";
+import { createTestAction, updateTestAction } from "../actions";
 import { Label, Input, Textarea, FieldError } from "@/components/ui/FormField";
 import { Button } from "@/components/ui/Button";
 
-type Option = { key: number; text: string };
+type Option = { key: number; id?: string; text: string };
 type Question = {
   key: number;
+  id?: string;
+  imageUrl?: string | null;
   type: "CHOICE" | "TEXT";
   text: string;
   points: number;
@@ -26,9 +28,51 @@ const newQuestion = (): Question => ({
   correct: 0,
 });
 
-export function TestBuilder({ students }: { students: { id: string; displayName: string }[] }) {
-  const [state, formAction, pending] = useActionState(createTestAction, undefined);
-  const [questions, setQuestions] = useState<Question[]>(() => [newQuestion()]);
+export type TestInitial = {
+  testId: string;
+  title: string;
+  description: string;
+  hasAttempts: boolean;
+  questions: {
+    id: string;
+    type: "CHOICE" | "TEXT";
+    text: string;
+    points: number;
+    imageUrl: string | null;
+    options: { id: string; text: string; isCorrect: boolean }[];
+  }[];
+};
+
+function fromInitial(init: TestInitial): Question[] {
+  return init.questions.map((q) => {
+    const options: Option[] = q.options.map((o) => ({ key: nextKey++, id: o.id, text: o.text }));
+    while (q.type === "CHOICE" && options.length < 2) options.push(newOption());
+    return {
+      key: nextKey++,
+      id: q.id,
+      imageUrl: q.imageUrl,
+      type: q.type,
+      text: q.text,
+      points: q.points,
+      options,
+      correct: Math.max(0, q.options.findIndex((o) => o.isCorrect)),
+    };
+  });
+}
+
+export function TestBuilder({
+  students = [],
+  initial,
+}: {
+  students?: { id: string; displayName: string }[];
+  initial?: TestInitial;
+}) {
+  const editing = !!initial;
+  const [state, formAction, pending] = useActionState(
+    initial ? updateTestAction.bind(null, initial.testId) : createTestAction,
+    undefined,
+  );
+  const [questions, setQuestions] = useState<Question[]>(() => (initial ? fromInitial(initial) : [newQuestion()]));
   const [assignToAll, setAssignToAll] = useState(true);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -42,11 +86,11 @@ export function TestBuilder({ students }: { students: { id: string; displayName:
       <div className="brutal-card flex flex-col gap-4 p-6">
         <div>
           <Label htmlFor="title">Название теста</Label>
-          <Input id="title" name="title" required maxLength={120} />
+          <Input id="title" name="title" required maxLength={120} defaultValue={initial?.title} />
         </div>
         <div>
           <Label htmlFor="description">Описание (необязательно)</Label>
-          <Textarea id="description" name="description" className="min-h-20" maxLength={2000} />
+          <Textarea id="description" name="description" className="min-h-20" maxLength={2000} defaultValue={initial?.description} />
         </div>
       </div>
 
@@ -54,12 +98,16 @@ export function TestBuilder({ students }: { students: { id: string; displayName:
 
       {questions.map((q, qi) => (
         <div key={q.key} className="brutal-card flex flex-col gap-4 p-6">
+          {q.id && <input type="hidden" name={`q-${qi}-id`} value={q.id} />}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="font-display text-base font-bold">Вопрос {qi + 1}</p>
             {questions.length > 1 && (
               <button
                 type="button"
-                onClick={() => setQuestions((qs) => qs.filter((_, i) => i !== qi))}
+                onClick={() => {
+                  if (q.id && initial?.hasAttempts && !confirm("Удалить вопрос? Ответы учеников на него тоже удалятся, баллы пересчитаются.")) return;
+                  setQuestions((qs) => qs.filter((_, i) => i !== qi));
+                }}
                 className="text-xs font-semibold text-coral hover:underline"
               >
                 удалить вопрос
@@ -72,7 +120,8 @@ export function TestBuilder({ students }: { students: { id: string; displayName:
               <Label htmlFor={`type-${q.key}`}>Тип ответа</Label>
               <select
                 id={`type-${q.key}`}
-                name={`q-${qi}-type`}
+                name={q.id ? undefined : `q-${qi}-type`}
+                disabled={!!q.id}
                 value={q.type}
                 onChange={(e) => patch(qi, { type: e.target.value as Question["type"] })}
                 className="w-full rounded-xl border-2 border-ink bg-white px-4 py-3 text-sm"
@@ -81,6 +130,7 @@ export function TestBuilder({ students }: { students: { id: string; displayName:
                 <option value="TEXT">Развёрнутый ответ (проверяет учитель)</option>
               </select>
             </div>
+            {q.id && <input type="hidden" name={`q-${qi}-type`} value={q.type} />}
             <div>
               <Label htmlFor={`points-${q.key}`}>Баллов за вопрос</Label>
               <Input
@@ -110,7 +160,19 @@ export function TestBuilder({ students }: { students: { id: string; displayName:
           </div>
 
           <div>
-            <Label htmlFor={`image-${q.key}`}>Изображение к вопросу (необязательно)</Label>
+            <Label htmlFor={`image-${q.key}`}>
+              {q.imageUrl ? "Заменить изображение (необязательно)" : "Изображение к вопросу (необязательно)"}
+            </Label>
+            {q.imageUrl && (
+              <div className="mb-2 flex flex-wrap items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={q.imageUrl} alt="" className="max-h-32 rounded-xl border border-line" />
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" name={`q-${qi}-removeImage`} className="h-4 w-4 accent-blue" />
+                  убрать изображение
+                </label>
+              </div>
+            )}
             <input
               id={`image-${q.key}`}
               name={`q-${qi}-image`}
@@ -126,6 +188,7 @@ export function TestBuilder({ students }: { students: { id: string; displayName:
               <Label>Варианты ответа (отметьте правильный)</Label>
               {q.options.map((o, oi) => (
                 <div key={o.key} className="flex items-center gap-2">
+                  {o.id && <input type="hidden" name={`q-${qi}-optid-${oi}`} value={o.id} />}
                   <input
                     type="radio"
                     name={`q-${qi}-correct`}
@@ -188,6 +251,7 @@ export function TestBuilder({ students }: { students: { id: string; displayName:
         </p>
       </div>
 
+      {!editing && (
       <div className="brutal-card flex flex-col gap-3 p-6">
         <label className="flex items-center gap-2 font-display text-sm font-semibold">
           <input
@@ -211,10 +275,18 @@ export function TestBuilder({ students }: { students: { id: string; displayName:
           </div>
         )}
       </div>
+      )}
+
+      {initial?.hasAttempts && (
+        <p className="rounded-xl bg-paper-dim p-3 text-sm text-ink-soft">
+          Ученики уже сдавали этот тест. После сохранения их баллы пересчитаются по новым правильным ответам и баллам за
+          вопросы; ответы на удалённые вопросы пропадут.
+        </p>
+      )}
 
       <FieldError>{state?.error}</FieldError>
       <Button type="submit" disabled={pending} className="self-start">
-        {pending ? "Создаём…" : "Создать тест"}
+        {editing ? (pending ? "Сохраняем…" : "Сохранить изменения") : pending ? "Создаём…" : "Создать тест"}
       </Button>
     </form>
   );

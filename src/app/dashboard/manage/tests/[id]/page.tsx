@@ -49,6 +49,12 @@ export default async function ManageTestDetailPage({ params }: { params: Promise
           <h1 className="font-display text-3xl font-extrabold">{test.title}</h1>
           <div className="flex items-center gap-2">
             <Badge tone="violet">{maxScore} баллов</Badge>
+            <Link
+              href={`/dashboard/manage/tests/${test.id}/edit`}
+              className="rounded-full bg-white px-3 py-1 font-display text-xs font-semibold text-blue ring-1 ring-line hover:bg-paper-dim"
+            >
+              Редактировать
+            </Link>
             <DeleteTestButton testId={test.id} />
           </div>
         </div>
