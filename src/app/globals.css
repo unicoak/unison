@@ -26,6 +26,57 @@
   --shadow-hard-lg: 0 12px 32px rgba(28, 110, 242, 0.24);
 }
 
+:root {
+  --surface: #fff;
+  --blob-blue: rgba(28, 110, 242, 0.22);
+  --blob-mint: rgba(62, 224, 181, 0.22);
+  color-scheme: light;
+}
+
+/* Dark theme: same tokens, darker values. Toggled via data-theme on <html>. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: #14224a;
+  --blob-blue: rgba(28, 110, 242, 0.2);
+  --blob-mint: rgba(62, 224, 181, 0.08);
+  --color-paper: #0a1228;
+  --color-paper-dim: #1a2a57;
+  --color-ink: #e8f0ff;
+  --color-ink-soft: #9fb3dc;
+  --color-line: #2c4075;
+  --color-blue: #3b82f6;
+  --color-blue-deep: #2563d6;
+  --color-navy: #1a3a8a;
+  --color-violet: #3b82f6;
+  --color-violet-deep: #2563d6;
+  --shadow-hard-sm: 0 3px 10px rgba(0, 0, 0, 0.4);
+  --shadow-hard: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-hard-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="dark"] .bg-white {
+  background-color: var(--surface);
+}
+
+/* Bright accent backgrounds keep dark text in both themes. */
+:root[data-theme="dark"] .bg-lime,
+:root[data-theme="dark"] .bg-sky,
+:root[data-theme="dark"] .bg-sun {
+  color: #0c2559;
+}
+
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+  color: var(--color-ink);
+}
+
+/* Browser autofill would paint the fields light grey. */
+:root[data-theme="dark"] input:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-ink);
+  box-shadow: 0 0 0 1000px var(--surface) inset;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -35,10 +86,10 @@ body {
   color: var(--color-ink);
   font-family: var(--font-body);
   background-image:
-    radial-gradient(circle at 0% 0%, rgba(28, 110, 242, 0.22) 0, transparent 45%),
-    radial-gradient(circle at 100% 18%, rgba(62, 224, 181, 0.22) 0, transparent 40%),
-    radial-gradient(circle at 0% 100%, rgba(28, 110, 242, 0.18) 0, transparent 45%),
-    radial-gradient(circle at 100% 100%, rgba(62, 224, 181, 0.2) 0, transparent 40%);
+    radial-gradient(circle at 0% 0%, var(--blob-blue) 0, transparent 45%),
+    radial-gradient(circle at 100% 18%, var(--blob-mint) 0, transparent 40%),
+    radial-gradient(circle at 0% 100%, var(--blob-blue) 0, transparent 45%),
+    radial-gradient(circle at 100% 100%, var(--blob-mint) 0, transparent 40%);
   background-attachment: fixed;
 }
 
@@ -57,7 +108,7 @@ body {
 }
 
 .brutal-card {
-  background-color: #fff;
+  background-color: var(--surface);
   border: 1.5px solid var(--color-line);
   border-radius: 1.4rem;
   box-shadow: var(--shadow-hard);

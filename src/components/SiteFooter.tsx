@@ -1,4 +1,5 @@
 import { SITE_NAME, ORGANIZATION } from "@/lib/brand";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME;
 const commit = process.env.NEXT_PUBLIC_GIT_COMMIT;
@@ -26,6 +27,7 @@ export function SiteFooter({ className = "" }: { className?: string }) {
         {commit ? ` (${commit})` : ""}
         {buildTime ? ` · сборка ${formatBuildTime(buildTime)} (сахалинское)` : ""}
       </p>
+      <ThemeToggle className="mt-2" />
     </footer>
   );
 }

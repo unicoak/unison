@@ -4,6 +4,7 @@ import { ROLE_LABELS } from "@/lib/labels";
 import type { AppRole } from "@/lib/guards";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { logoutAction } from "@/app/dashboard/actions";
 
 export function TopBar({ name, role, avatarUrl }: { name: string; role: AppRole; avatarUrl: string | null }) {
@@ -14,6 +15,7 @@ export function TopBar({ name, role, avatarUrl }: { name: string; role: AppRole;
       </Link>
 
       <div className="flex items-center gap-3">
+        <ThemeToggle />
         <Link href="/dashboard/profile" className="flex items-center gap-2" title="Профиль и фото">
           <Avatar name={name} url={avatarUrl} size="sm" />
           <span className="hidden font-display text-sm font-semibold leading-tight hover:underline sm:block">{name}</span>

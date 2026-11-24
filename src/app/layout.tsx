@@ -29,7 +29,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru">
+    <html lang="ru" suppressHydrationWarning>
+      <head>
+        {/* Sets the saved (or system) theme before first paint to avoid a light flash. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem("theme");if(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches)t="dark";if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}`,
+          }}
+        />
+      </head>
       <body className={`${montserrat.variable} ${caveat.variable} ${golos.variable} antialiased`}>{children}</body>
     </html>
   );
