@@ -6,6 +6,8 @@ import { z } from "zod";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { storeFile, validateFile } from "@/lib/storage";
+import { parseSiteDateTime } from "@/lib/quests";
+import { settleTestXp } from "@/lib/tests";
 
 export type ActionState = { error?: string; success?: string } | undefined;
 
@@ -15,7 +17,26 @@ const MAX_OPTIONS = 10;
 const draftSchema = z.object({
   title: z.string().trim().min(3, "Название: минимум 3 символа").max(120),
   description: z.string().trim().max(2000).optional(),
+  xpMode: z.enum(["NONE", "PER_QUESTION", "TOTAL"]).default("NONE"),
+  xpTotal: z.coerce.number().int("XP за тест — целое число").min(0).max(100000).default(0),
+  availableAt: z.string().optional(),
 });
+
+/** Reads the common test fields; availableAt is Sakhalin time, empty = open at once. */
+function readTestMeta(formData: FormData) {
+  const parsed = draftSchema.safeParse({
+    title: formData.get("title"),
+    description: formData.get("description") || undefined,
+    xpMode: formData.get("xpMode") || "NONE",
+    xpTotal: formData.get("xpTotal") || 0,
+    availableAt: String(formData.get("availableAt") ?? "") || undefined,
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Проверьте поля" };
+  const { availableAt, ...rest } = parsed.data;
+  const availableAtDate = availableAt ? parseSiteDateTime(availableAt) : null;
+  if (availableAt && !availableAtDate) return { error: "Некорректная дата открытия теста" };
+  return { meta: { ...rest, availableAt: availableAtDate } };
+}
 
 type QuestionDraft = {
   id: string | null; // set when editing an existing question
@@ -23,6 +44,7 @@ type QuestionDraft = {
   type: "CHOICE" | "TEXT";
   text: string;
   points: number;
+  xp: number;
   image: File | null;
   options: { id: string | null; text: string; isCorrect: boolean }[];
 };
@@ -42,6 +64,11 @@ function readQuestions(formData: FormData): { questions?: QuestionDraft[]; error
     if (text.length > 2000) return { error: `Вопрос ${n}: слишком длинный текст` };
     if (!Number.isInteger(points) || points < 0 || points > 1000) {
       return { error: `Вопрос ${n}: баллы — целое число от 0 до 1000` };
+    }
+
+    const xp = Number(formData.get(`q-${i}-xp`) || 0);
+    if (!Number.isInteger(xp) || xp < 0 || xp > 10000) {
+      return { error: `Вопрос ${n}: опыт — целое число от 0 до 10000` };
     }
 
     const imageRaw = formData.get(`q-${i}-image`);
@@ -68,7 +95,7 @@ function readQuestions(formData: FormData): { questions?: QuestionDraft[]; error
 
     const id = String(formData.get(`q-${i}-id`) ?? "") || null;
     const removeImage = formData.get(`q-${i}-removeImage`) === "on";
-    questions.push({ id, removeImage, type, text, points, image, options });
+    questions.push({ id, removeImage, type, text, points, xp, image, options });
   }
   return { questions };
 }
@@ -76,11 +103,8 @@ function readQuestions(formData: FormData): { questions?: QuestionDraft[]; error
 export async function createTestAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireStaff();
 
-  const parsed = draftSchema.safeParse({
-    title: formData.get("title"),
-    description: formData.get("description") || undefined,
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Проверьте поля" };
+  const { meta, error: metaError } = readTestMeta(formData);
+  if (!meta) return { error: metaError };
 
   const { questions, error } = readQuestions(formData);
   if (error || !questions) return { error };
@@ -101,8 +125,11 @@ export async function createTestAction(_prev: ActionState, formData: FormData): 
 
   const test = await prisma.test.create({
     data: {
-      title: parsed.data.title,
-      description: parsed.data.description,
+      title: meta.title,
+      description: meta.description,
+      xpMode: meta.xpMode,
+      xpTotal: meta.xpTotal,
+      availableAt: meta.availableAt,
       createdById: session.user.id,
       questions: {
         create: questions.map((q, i) => ({
@@ -110,6 +137,7 @@ export async function createTestAction(_prev: ActionState, formData: FormData): 
           type: q.type,
           text: q.text,
           points: q.points,
+          xp: q.xp,
           imageUrl: imageUrls[i],
           options: { create: q.options.map((o, j) => ({ order: j, text: o.text, isCorrect: o.isCorrect })) },
         })),
@@ -189,21 +217,21 @@ export async function gradeAttemptAction(_prev: ActionState, formData: FormData)
     }),
   ]);
 
+  await settleTestXp(attemptId, session.user.id);
+
   revalidatePath(`/dashboard/manage/tests/${attempt.testId}`);
   revalidatePath(`/dashboard/tests/${attempt.testId}`);
+  revalidatePath("/dashboard/xp");
   revalidatePath("/dashboard/tests");
   return { success: "Оценка сохранена" };
 }
 
 /** Edit a test in place. Existing questions/options keep their ids, so students' answers survive. */
 export async function updateTestAction(testId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireStaff();
+  const session = await requireStaff();
 
-  const parsed = draftSchema.safeParse({
-    title: formData.get("title"),
-    description: formData.get("description") || undefined,
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Проверьте поля" };
+  const { meta, error: metaError } = readTestMeta(formData);
+  if (!meta) return { error: metaError };
 
   const { questions, error } = readQuestions(formData);
   if (error || !questions) return { error };
@@ -239,7 +267,13 @@ export async function updateTestAction(testId: string, _prev: ActionState, formD
     async (tx) => {
       await tx.test.update({
         where: { id: testId },
-        data: { title: parsed.data.title, description: parsed.data.description ?? null },
+        data: {
+          title: meta.title,
+          description: meta.description ?? null,
+          xpMode: meta.xpMode,
+          xpTotal: meta.xpTotal,
+          availableAt: meta.availableAt,
+        },
       });
 
       const removed = test.questions.filter((q) => !keptIds.has(q.id)).map((q) => q.id);
@@ -255,12 +289,13 @@ export async function updateTestAction(testId: string, _prev: ActionState, formD
               order: i,
               text: q.text,
               points: q.points,
+              xp: q.xp,
               ...(imageUrls[i] !== undefined ? { imageUrl: imageUrls[i] } : {}),
             },
           });
         } else {
           const created = await tx.testQuestion.create({
-            data: { testId, order: i, type: q.type, text: q.text, points: q.points, imageUrl: imageUrls[i] ?? null },
+            data: { testId, order: i, type: q.type, text: q.text, points: q.points, xp: q.xp, imageUrl: imageUrls[i] ?? null },
           });
           questionId = created.id;
         }
@@ -317,9 +352,14 @@ export async function updateTestAction(testId: string, _prev: ActionState, formD
     { timeout: 30000, maxWait: 10000 },
   );
 
+  // XP rules/answers may have changed: pay or take back the difference for every graded attempt.
+  const graded = await prisma.testAttempt.findMany({ where: { testId, status: "GRADED" }, select: { id: true } });
+  for (const a of graded) await settleTestXp(a.id, session.user.id);
+
   revalidatePath("/dashboard/manage/tests");
   revalidatePath(`/dashboard/manage/tests/${testId}`);
   revalidatePath("/dashboard/tests");
   revalidatePath(`/dashboard/tests/${testId}`);
+  revalidatePath("/dashboard");
   redirect(`/dashboard/manage/tests/${testId}`);
 }

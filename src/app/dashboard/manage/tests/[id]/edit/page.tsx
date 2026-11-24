@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { toSiteInputValue } from "@/lib/quests";
 import { TestBuilder } from "../../new/TestBuilder";
 
 export default async function EditTestPage({ params }: { params: Promise<{ id: string }> }) {
@@ -31,11 +32,15 @@ export default async function EditTestPage({ params }: { params: Promise<{ id: s
           title: test.title,
           description: test.description ?? "",
           hasAttempts: test._count.attempts > 0,
+          xpMode: test.xpMode,
+          xpTotal: test.xpTotal,
+          availableAt: toSiteInputValue(test.availableAt),
           questions: test.questions.map((q) => ({
             id: q.id,
             type: q.type,
             text: q.text,
             points: q.points,
+            xp: q.xp,
             imageUrl: q.imageUrl,
             options: q.options.map((o) => ({ id: o.id, text: o.text, isCorrect: o.isCorrect })),
           })),

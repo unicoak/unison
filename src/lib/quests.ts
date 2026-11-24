@@ -24,3 +24,9 @@ export function formatSiteDateTime(date: Date) {
 export function questOpenedFilter(now = new Date()): Prisma.QuestWhereInput {
   return { OR: [{ availableAt: null }, { availableAt: { lte: now } }] };
 }
+
+/** A date as the value of a `datetime-local` input, in site (Sakhalin) time. */
+export function toSiteInputValue(date: Date | null) {
+  if (!date) return "";
+  return new Date(date.getTime() + 11 * 3600_000).toISOString().slice(0, 16);
+}

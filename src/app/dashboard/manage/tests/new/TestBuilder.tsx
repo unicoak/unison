@@ -5,6 +5,7 @@ import { createTestAction, updateTestAction } from "../actions";
 import { Label, Input, Textarea, FieldError } from "@/components/ui/FormField";
 import { Button } from "@/components/ui/Button";
 
+type XpMode = "NONE" | "PER_QUESTION" | "TOTAL";
 type Option = { key: number; id?: string; text: string };
 type Question = {
   key: number;
@@ -13,6 +14,7 @@ type Question = {
   type: "CHOICE" | "TEXT";
   text: string;
   points: number;
+  xp: number;
   options: Option[];
   correct: number;
 };
@@ -24,6 +26,7 @@ const newQuestion = (): Question => ({
   type: "CHOICE",
   text: "",
   points: 1,
+  xp: 0,
   options: [newOption(), newOption()],
   correct: 0,
 });
@@ -33,11 +36,15 @@ export type TestInitial = {
   title: string;
   description: string;
   hasAttempts: boolean;
+  xpMode: XpMode;
+  xpTotal: number;
+  availableAt: string; // datetime-local value, site time
   questions: {
     id: string;
     type: "CHOICE" | "TEXT";
     text: string;
     points: number;
+    xp: number;
     imageUrl: string | null;
     options: { id: string; text: string; isCorrect: boolean }[];
   }[];
@@ -54,6 +61,7 @@ function fromInitial(init: TestInitial): Question[] {
       type: q.type,
       text: q.text,
       points: q.points,
+      xp: q.xp,
       options,
       correct: Math.max(0, q.options.findIndex((o) => o.isCorrect)),
     };
@@ -74,12 +82,14 @@ export function TestBuilder({
   );
   const [questions, setQuestions] = useState<Question[]>(() => (initial ? fromInitial(initial) : [newQuestion()]));
   const [assignToAll, setAssignToAll] = useState(true);
+  const [xpMode, setXpMode] = useState<XpMode>(initial?.xpMode ?? "NONE");
   const formRef = useRef<HTMLFormElement>(null);
 
   const patch = (qi: number, p: Partial<Question>) =>
     setQuestions((qs) => qs.map((q, i) => (i === qi ? { ...q, ...p } : q)));
 
   const total = questions.reduce((s, q) => s + (Number(q.points) || 0), 0);
+  const totalXp = questions.reduce((s, q) => s + (Number(q.xp) || 0), 0);
 
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-5">
@@ -91,6 +101,41 @@ export function TestBuilder({
         <div>
           <Label htmlFor="description">Описание (необязательно)</Label>
           <Textarea id="description" name="description" className="min-h-20" maxLength={2000} defaultValue={initial?.description} />
+        </div>
+        <div>
+          <Label htmlFor="availableAt">Открыть для учеников (необязательно)</Label>
+          <Input id="availableAt" name="availableAt" type="datetime-local" defaultValue={initial?.availableAt} />
+          <p className="mt-1 text-xs text-ink-soft">
+            Сахалинское время. До этого момента ученики тест не видят; пусто — тест открыт сразу.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label>Опыт за тест</Label>
+          <select
+            name="xpMode"
+            value={xpMode}
+            onChange={(e) => setXpMode(e.target.value as XpMode)}
+            className="w-full rounded-xl border-2 border-ink bg-white px-4 py-3 text-sm"
+          >
+            <option value="NONE">Без опыта</option>
+            <option value="PER_QUESTION">Опыт за каждый вопрос (задаёте у каждого вопроса)</option>
+            <option value="TOTAL">Опыт за весь тест (пропорционально проценту правильных ответов)</option>
+          </select>
+          {xpMode === "TOTAL" && (
+            <div>
+              <Label htmlFor="xpTotal">Опыт за тест целиком</Label>
+              <Input id="xpTotal" name="xpTotal" type="number" min={0} max={100000} defaultValue={initial?.xpTotal ?? 0} required />
+              <p className="mt-1 text-xs text-ink-soft">
+                Ученик получит эту сумму, умноженную на долю набранных баллов (80% баллов — 80% опыта).
+              </p>
+            </div>
+          )}
+          {xpMode === "PER_QUESTION" && (
+            <p className="text-xs text-ink-soft">
+              Опыт за вопрос указывается в самом вопросе. За развёрнутый ответ — пропорционально баллам, которые
+              поставит учитель.
+            </p>
+          )}
         </div>
       </div>
 
@@ -144,6 +189,21 @@ export function TestBuilder({
                 required
               />
             </div>
+            {xpMode === "PER_QUESTION" && (
+              <div>
+                <Label htmlFor={`xp-${q.key}`}>Опыт за вопрос</Label>
+                <Input
+                  id={`xp-${q.key}`}
+                  name={`q-${qi}-xp`}
+                  type="number"
+                  min={0}
+                  max={10000}
+                  value={q.xp}
+                  onChange={(e) => patch(qi, { xp: Number(e.target.value) })}
+                  required
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -248,6 +308,7 @@ export function TestBuilder({
         </Button>
         <p className="text-sm font-semibold text-ink-soft">
           Вопросов: {questions.length} · максимум баллов: {total}
+          {xpMode === "PER_QUESTION" && ` · опыта всего: ${totalXp}`}
         </p>
       </div>
 
@@ -280,7 +341,7 @@ export function TestBuilder({
       {initial?.hasAttempts && (
         <p className="rounded-xl bg-paper-dim p-3 text-sm text-ink-soft">
           Ученики уже сдавали этот тест. После сохранения их баллы пересчитаются по новым правильным ответам и баллам за
-          вопросы; ответы на удалённые вопросы пропадут.
+          вопросы; ответы на удалённые вопросы пропадут. Опыт за тест тоже пересчитается: недостающий будет начислен, лишний списан.
         </p>
       )}
 

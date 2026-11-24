@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/Badge";
-import { formatScore } from "@/lib/tests";
+import { formatScore, maxTestXp } from "@/lib/tests";
 import { TakeTestForm } from "./TakeTestForm";
 
 export default async function StudentTestPage({ params }: { params: Promise<{ id: string }> }) {
@@ -31,7 +31,8 @@ export default async function StudentTestPage({ params }: { params: Promise<{ id
       },
     },
   });
-  if (!test) notFound();
+  if (!test || (test.availableAt && test.availableAt > new Date())) notFound();
+  const maxXp = maxTestXp(test, test.questions);
 
   const header = (
     <div>
@@ -40,6 +41,13 @@ export default async function StudentTestPage({ params }: { params: Promise<{ id
       </Link>
       <h1 className="mt-1 font-display text-3xl font-extrabold">{test.title}</h1>
       {test.description && <p className="mt-2 whitespace-pre-wrap text-ink-soft">{test.description}</p>}
+      {maxXp > 0 && (
+        <p className="mt-2 text-sm font-semibold text-violet">
+          {test.xpMode === "TOTAL"
+            ? `За тест можно получить до ${maxXp} XP — пропорционально доле правильных ответов`
+            : `За тест можно получить до ${maxXp} XP — за правильные ответы на вопросы`}
+        </p>
+      )}
     </div>
   );
 
@@ -73,6 +81,9 @@ export default async function StudentTestPage({ params }: { params: Promise<{ id
           <>
             <p className="font-display text-xs font-bold uppercase tracking-widest text-violet">Ваш результат</p>
             <p className="mt-1 font-display text-3xl font-extrabold">{formatScore(attempt.score, attempt.maxScore)}</p>
+            {attempt.xpAwarded > 0 && (
+              <p className="mt-2 font-display text-lg font-bold text-violet">+{attempt.xpAwarded} XP</p>
+            )}
           </>
         ) : (
           <>

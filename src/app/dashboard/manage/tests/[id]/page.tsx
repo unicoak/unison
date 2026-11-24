@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/Badge";
-import { formatScore } from "@/lib/tests";
+import { formatScore, maxTestXp } from "@/lib/tests";
+import { formatSiteDateTime } from "@/lib/quests";
 import { DeleteTestButton } from "./DeleteTestButton";
 import { AssignMore } from "./AssignMore";
 import { GradePanel } from "./GradePanel";
@@ -49,6 +50,10 @@ export default async function ManageTestDetailPage({ params }: { params: Promise
           <h1 className="font-display text-3xl font-extrabold">{test.title}</h1>
           <div className="flex items-center gap-2">
             <Badge tone="violet">{maxScore} баллов</Badge>
+            {maxTestXp(test, test.questions) > 0 && <Badge tone="lime">до {maxTestXp(test, test.questions)} XP</Badge>}
+            {test.availableAt && test.availableAt > new Date() && (
+              <Badge tone="sky">Откроется {formatSiteDateTime(test.availableAt)}</Badge>
+            )}
             <Link
               href={`/dashboard/manage/tests/${test.id}/edit`}
               className="rounded-full bg-white px-3 py-1 font-display text-xs font-semibold text-blue ring-1 ring-line hover:bg-paper-dim"
@@ -82,7 +87,10 @@ export default async function ManageTestDetailPage({ params }: { params: Promise
                 ) : attempt.status === "SUBMITTED" ? (
                   <Badge tone="sun">Нужна проверка</Badge>
                 ) : (
-                  <Badge tone="lime">{formatScore(attempt.score, attempt.maxScore)}</Badge>
+                  <Badge tone="lime">
+                    {formatScore(attempt.score, attempt.maxScore)}
+                    {attempt.xpAwarded > 0 && ` · +${attempt.xpAwarded} XP`}
+                  </Badge>
                 )}
               </div>
 

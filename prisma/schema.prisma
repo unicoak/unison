@@ -44,14 +44,14 @@ model User {
 }
 
 model StudentProfile {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  xp              Int      @default(0)
-  level           Int      @default(1)
-  title           String   @default("Новичок")
-  celebrateLevel  Int?
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xp             Int      @default(0)
+  level          Int      @default(1)
+  title          String   @default("Новичок")
+  celebrateLevel Int?
+  updatedAt      DateTime @updatedAt
 }
 
 model LevelDefinition {
@@ -220,7 +220,13 @@ model ForumPost {
 
 enum TestQuestionType {
   CHOICE // pick one of the prepared options, graded automatically
-  TEXT   // free-form answer, graded by a teacher
+  TEXT // free-form answer, graded by a teacher
+}
+
+enum TestXpMode {
+  NONE // no XP for this test
+  PER_QUESTION // each question has its own XP (TestQuestion.xp), earned in proportion to its points
+  TOTAL // Test.xpTotal for the whole test, in proportion to score / maxScore
 }
 
 enum TestAttemptStatus {
@@ -229,12 +235,16 @@ enum TestAttemptStatus {
 }
 
 model Test {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   title       String
   description String?
   createdById String
-  createdBy   User     @relation("TestCreator", fields: [createdById], references: [id])
-  createdAt   DateTime @default(now())
+  createdBy   User       @relation("TestCreator", fields: [createdById], references: [id])
+  createdAt   DateTime   @default(now())
+  xpMode      TestXpMode @default(NONE)
+  xpTotal     Int        @default(0)
+  // Students see the test only from this moment on (null = at once).
+  availableAt DateTime?
 
   questions   TestQuestion[]
   assignments TestAssignment[]
@@ -250,6 +260,7 @@ model TestQuestion {
   text     String
   imageUrl String?
   points   Int              @default(1)
+  xp       Int              @default(0)
 
   options TestOption[]
   answers TestAnswer[]
@@ -290,6 +301,8 @@ model TestAttempt {
   maxScore     Int
   submittedAt  DateTime          @default(now())
   reviewedAt   DateTime?
+  // XP already paid out for this attempt; later re-grading/editing pays only the difference.
+  xpAwarded    Int               @default(0)
   reviewedById String?
   reviewedBy   User?             @relation("AttemptReviewer", fields: [reviewedById], references: [id])
 

@@ -2,17 +2,18 @@ import Link from "next/link";
 import { requireRole } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/Badge";
-import { formatScore } from "@/lib/tests";
+import { formatScore, maxTestXp, testOpenedFilter } from "@/lib/tests";
 
 export default async function StudentTestsPage() {
   const session = await requireRole(["STUDENT"]);
   const studentId = session.user.id;
 
   const assignments = await prisma.testAssignment.findMany({
-    where: { studentId },
+    where: { studentId, test: testOpenedFilter() },
     include: {
       test: {
         include: {
+          questions: { select: { xp: true } },
           _count: { select: { questions: true } },
           attempts: { where: { studentId } },
         },
@@ -39,14 +40,20 @@ export default async function StudentTestsPage() {
               >
                 <div className="min-w-0">
                   <p className="truncate font-display text-base font-bold">{test.title}</p>
-                  <p className="text-xs font-semibold text-ink-soft">вопросов: {test._count.questions}</p>
+                  <p className="text-xs font-semibold text-ink-soft">
+                    вопросов: {test._count.questions}
+                    {maxTestXp(test, test.questions) > 0 && ` · до ${maxTestXp(test, test.questions)} XP`}
+                  </p>
                 </div>
                 {!attempt ? (
                   <Badge tone="violet">Пройти</Badge>
                 ) : attempt.status === "SUBMITTED" ? (
                   <Badge tone="sun">На проверке</Badge>
                 ) : (
-                  <Badge tone="lime">{formatScore(attempt.score, attempt.maxScore)}</Badge>
+                  <Badge tone="lime">
+                    {formatScore(attempt.score, attempt.maxScore)}
+                    {attempt.xpAwarded > 0 && ` · +${attempt.xpAwarded} XP`}
+                  </Badge>
                 )}
               </Link>
             );

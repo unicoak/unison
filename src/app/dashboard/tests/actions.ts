@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { settleTestXp } from "@/lib/tests";
 
 export type SubmitTestState = { error?: string; done?: boolean } | undefined;
 
@@ -13,8 +14,12 @@ export async function submitTestAction(_prev: SubmitTestState, formData: FormDat
 
   const assignment = await prisma.testAssignment.findUnique({
     where: { testId_studentId: { testId, studentId } },
+    include: { test: { select: { availableAt: true } } },
   });
   if (!assignment) return { error: "Этот тест вам не выдан" };
+  if (assignment.test.availableAt && assignment.test.availableAt > new Date()) {
+    return { error: "Этот тест ещё не открыт" };
+  }
 
   const existing = await prisma.testAttempt.findUnique({ where: { testId_studentId: { testId, studentId } } });
   if (existing) return { error: "Вы уже сдали этот тест" };
@@ -40,8 +45,9 @@ export async function submitTestAction(_prev: SubmitTestState, formData: FormDat
     return { questionId: q.id, textAnswer: text || null };
   });
 
+  let attemptId: string;
   try {
-    await prisma.testAttempt.create({
+    const created = await prisma.testAttempt.create({
       data: {
         testId,
         studentId,
@@ -51,11 +57,16 @@ export async function submitTestAction(_prev: SubmitTestState, formData: FormDat
         answers: { create: answers },
       },
     });
+    attemptId = created.id;
   } catch {
     return { error: "Не удалось сохранить ответы. Возможно, тест уже сдан." };
   }
 
+  if (!hasText) await settleTestXp(attemptId);
+
   revalidatePath(`/dashboard/tests/${testId}`);
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/xp");
   revalidatePath("/dashboard/tests");
   revalidatePath(`/dashboard/manage/tests/${testId}`);
   return { done: true };

@@ -3,6 +3,7 @@ import { requireStaff } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { LinkButton } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { formatSiteDateTime } from "@/lib/quests";
 
 export default async function ManageTestsPage() {
   await requireStaff();
@@ -40,7 +41,12 @@ export default async function ManageTestsPage() {
                     вопросов {t._count.questions} · выдано {t._count.assignments} · сдано {t.attempts.length}
                   </p>
                 </div>
-                {pending > 0 && <Badge tone="sun">{pending} на проверке</Badge>}
+                <div className="flex flex-wrap items-center gap-2">
+                  {t.availableAt && t.availableAt > new Date() && (
+                    <Badge tone="sky">Откроется {formatSiteDateTime(t.availableAt)}</Badge>
+                  )}
+                  {pending > 0 && <Badge tone="sun">{pending} на проверке</Badge>}
+                </div>
               </Link>
             );
           })}
